@@ -18,11 +18,11 @@ module.exports = {
 		browser
 			.end();
 	},
-	'Name field can be created via the initial modal': function (browser) {
+	'Text field can be filled via the initial modal': function (browser) {
 		browser.app
-			.click('@fieldsMenu')
+			.click('@fieldListsMenu')
 			.waitForElementVisible('@listScreen')
-			.click('@textsFieldsSubmenu')
+			.click('@textListSubmenu')
 			.waitForElementVisible('@listScreen');
 
 		browser.listPage
@@ -53,7 +53,7 @@ module.exports = {
 		browser.itemPage.section.form.section.textList.section.name
 			.verifyInput({value: 'Text Field Test 1'});
 	},
-	'Name field can be created via the edit form': function (browser) {
+	'Text field can be filled via the edit form': function (browser) {
 		browser.itemPage.section.form.section.textList.section.name
 			.fillInput({value: 'Text Field Test 2'});
 

@@ -16,11 +16,11 @@ module.exports = {
 		browser.app.signout();
 		browser.end();
 	},
-	'Select field can be filled via the initial modal': function (browser) {
+	'Url field can be filled via the initial modal': function (browser) {
 		browser.app
 			.click('@fieldListsMenu')
 			.waitForElementVisible('@listScreen')
-			.click('@selectListSubmenu')
+			.click('@urlListSubmenu')
 			.waitForElementVisible('@listScreen');
 
 		browser.listPage
@@ -29,17 +29,17 @@ module.exports = {
 		browser.app
 			.waitForElementVisible('@initialFormScreen');
 
-		browser.initialFormPage.section.form.section.selectList.section.name
-			.fillInput({value: 'Select Field Test 1'});
+		browser.initialFormPage.section.form.section.urlList.section.name
+			.fillInput({value: 'Url Field Test 1'});
 
-		browser.initialFormPage.section.form.section.selectList.section.name
-			.verifyInput({value: 'Select Field Test 1'});
+		browser.initialFormPage.section.form.section.urlList.section.name
+			.verifyInput({value: 'Url Field Test 1'});
 
-		browser.initialFormPage.section.form.section.selectList.section.fieldA
-			.fillInput({value: ''});
+		browser.initialFormPage.section.form.section.urlList.section.fieldA
+			.fillInput({value: 'www.example1.com'});
 
-		browser.initialFormPage.section.form.section.selectList.section.fieldA
-			.verifyInput({value: 'One'});
+		browser.initialFormPage.section.form.section.urlList.section.fieldA
+			.verifyInput({value: 'www.example1.com'});
 
 		browser.initialFormPage.section.form
 			.click('@createButton');
@@ -49,17 +49,17 @@ module.exports = {
 
 		browser.itemPage
 			.expect.element('@flashMessage')
-			.text.to.equal('New Select Select Field Test 1 created.');
+			.text.to.equal('New Url Url Field Test 1 created.');
 
-		browser.itemPage.section.form.section.selectList.section.name
-			.verifyInput({value: 'Select Field Test 1'});
+		browser.itemPage.section.form.section.urlList.section.name
+			.verifyInput({value: 'Url Field Test 1'});
 
-		browser.itemPage.section.form.section.selectList.section.fieldA
-			.verifyInput({value: 'One'});
+		browser.itemPage.section.form.section.urlList.section.fieldA
+			.verifyInput({value: 'www.example1.com'});
 	},
-	'Select field can be filled via the edit form': function (browser) {
-		browser.itemPage.section.form.section.selectList.section.fieldB
-			.fillInput({value: 'Two'});
+	'Url field can be filled via the edit form': function (browser) {
+		browser.itemPage.section.form.section.urlList.section.fieldB
+			.fillInput({value: 'www.example2.com'});
 
 		browser.itemPage.section.form
 			.click('@saveButton');
@@ -71,11 +71,11 @@ module.exports = {
 			.expect.element('@flashMessage')
 			.text.to.equal('Your changes have been saved.');
 
-		browser.itemPage.section.form.section.selectList.section.name
-			.verifyInput({value: 'Select Field Test 1'});
+		browser.itemPage.section.form.section.urlList.section.name
+			.verifyInput({value: 'Url Field Test 1'});
 
-		browser.itemPage.section.form.section.selectList.section.fieldB
-			.verifyInput({value: 'Two'});
+		browser.itemPage.section.form.section.urlList.section.fieldB
+			.verifyInput({value: 'www.example2.com'});
 	},
 	// UNDO ANY STATE CHANGES -- THIS TEST SHOULD RUN LAST
 	'restoring test state': function (browser) {

@@ -16,11 +16,11 @@ module.exports = {
 		browser.app.signout();
 		browser.end();
 	},
-	'Name field should be visible in initial modal': function (browser) {
+	'Datetime field should show correctly in the initial modal': function (browser) {
 		browser.app
 			.click('@fieldListsMenu')
 			.waitForElementVisible('@listScreen')
-			.click('@nameListSubmenu')
+			.click('@datetimeListSubmenu')
 			.waitForElementVisible('@listScreen');
 
 		browser.listPage
@@ -29,10 +29,10 @@ module.exports = {
 		browser.app
 			.waitForElementVisible('@initialFormScreen');
 
-		browser.initialFormPage.section.form.section.nameList.section.name
+		browser.initialFormPage.section.form.section.datetimeList.section.name
 			.verifyUI();
 
-		browser.initialFormPage.section.form.section.nameList.section.fieldA
+		browser.initialFormPage.section.form.section.datetimeList.section.fieldA
 			.verifyUI();
 	},
 	// UNDO ANY STATE CHANGES -- THIS TEST SHOULD RUN LAST

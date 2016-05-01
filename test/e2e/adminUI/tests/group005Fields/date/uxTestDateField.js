@@ -16,11 +16,11 @@ module.exports = {
 		browser.app.signout();
 		browser.end();
 	},
-	'Select field can be filled via the initial modal': function (browser) {
+	'Date field can be filled via the initial modal': function (browser) {
 		browser.app
 			.click('@fieldListsMenu')
 			.waitForElementVisible('@listScreen')
-			.click('@selectListSubmenu')
+			.click('@dateListSubmenu')
 			.waitForElementVisible('@listScreen');
 
 		browser.listPage
@@ -29,17 +29,17 @@ module.exports = {
 		browser.app
 			.waitForElementVisible('@initialFormScreen');
 
-		browser.initialFormPage.section.form.section.selectList.section.name
-			.fillInput({value: 'Select Field Test 1'});
+		browser.initialFormPage.section.form.section.dateList.section.name
+			.fillInput({value: 'Date Field Test 1'});
 
-		browser.initialFormPage.section.form.section.selectList.section.name
-			.verifyInput({value: 'Select Field Test 1'});
+		browser.initialFormPage.section.form.section.dateList.section.name
+			.verifyInput({value: 'Date Field Test 1'});
 
-		browser.initialFormPage.section.form.section.selectList.section.fieldA
-			.fillInput({value: ''});
+		browser.initialFormPage.section.form.section.dateList.section.fieldA
+			.fillInput({value: '2016-01-01'});
 
-		browser.initialFormPage.section.form.section.selectList.section.fieldA
-			.verifyInput({value: 'One'});
+		browser.initialFormPage.section.form.section.dateList.section.fieldA
+			.verifyInput({value: '2016-01-01'});
 
 		browser.initialFormPage.section.form
 			.click('@createButton');
@@ -49,17 +49,17 @@ module.exports = {
 
 		browser.itemPage
 			.expect.element('@flashMessage')
-			.text.to.equal('New Select Select Field Test 1 created.');
+			.text.to.equal('New Date Date Field Test 1 created.');
 
-		browser.itemPage.section.form.section.selectList.section.name
-			.verifyInput({value: 'Select Field Test 1'});
+		browser.itemPage.section.form.section.dateList.section.name
+			.verifyInput({value: 'Date Field Test 1'});
 
-		browser.itemPage.section.form.section.selectList.section.fieldA
-			.verifyInput({value: 'One'});
+		browser.itemPage.section.form.section.dateList.section.fieldA
+			.verifyInput({value: '2016-01-01'});
 	},
-	'Select field can be filled via the edit form': function (browser) {
-		browser.itemPage.section.form.section.selectList.section.fieldB
-			.fillInput({value: 'Two'});
+	'Date field can be filled via the edit form': function (browser) {
+		browser.itemPage.section.form.section.dateList.section.fieldB
+			.fillInput({value: '2016-01-02'});
 
 		browser.itemPage.section.form
 			.click('@saveButton');
@@ -71,11 +71,11 @@ module.exports = {
 			.expect.element('@flashMessage')
 			.text.to.equal('Your changes have been saved.');
 
-		browser.itemPage.section.form.section.selectList.section.name
-			.verifyInput({value: 'Select Field Test 1'});
+		browser.itemPage.section.form.section.dateList.section.name
+			.verifyInput({value: 'Date Field Test 1'});
 
-		browser.itemPage.section.form.section.selectList.section.fieldB
-			.verifyInput({value: 'Two'});
+		browser.itemPage.section.form.section.dateList.section.fieldB
+			.verifyInput({value: '2016-01-02'});
 	},
 	// UNDO ANY STATE CHANGES -- THIS TEST SHOULD RUN LAST
 	'restoring test state': function (browser) {

@@ -16,11 +16,11 @@ module.exports = {
 		browser.app.signout();
 		browser.end();
 	},
-	'Name field should be visible in initial modal': function (browser) {
+	'Text field should be visible in initial modal': function (browser) {
 		browser.app
-			.click('@fieldsMenu')
+			.click('@fieldListsMenu')
 			.waitForElementVisible('@listScreen')
-			.click('@textsFieldsSubmenu')
+			.click('@textListSubmenu')
 			.waitForElementVisible('@listScreen');
 
 		browser.listPage
