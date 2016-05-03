@@ -1,83 +1,53 @@
+var fieldTests = require('../commonFieldTestUtils.js');
+
 module.exports = {
-	before: function (browser) {
-		browser.app = browser.page.app();
-		browser.signinPage = browser.page.signin();
-		browser.listPage = browser.page.list();
-		browser.itemPage = browser.page.item();
-		browser.initialFormPage = browser.page.initialForm();
-
-		browser.app.navigate();
-		browser.app.waitForElementVisible('@signinScreen');
-
-		browser.signinPage.signin();
-		browser.app.waitForElementVisible('@homeScreen');
+	before: fieldTests.before,
+	after: fieldTests.after,
+	'Date field can be filled via the initial modal': function(browser) {
+		browser.app.openFieldList('Date');
+		browser.listPage.createFirstItem();
+		browser.app.waitForInitialFormScreen();
+		browser.initialFormPage.fillInputs({
+			listName: 'Date',
+			fields: {
+				'name': {value: 'Date Field Test 1'},
+				'fieldA': {value: '2016-01-01'},
+			}
+		});
+		browser.initialFormPage.assertInputs({
+			listName: 'Date',
+			fields: {
+				'name': {value: 'Date Field Test 1'},
+				'fieldA': {value: '2016-01-01'},
+			}
+		});
+		browser.initialFormPage.save();
+		browser.app.waitForItemScreen();
+		browser.itemPage.assertFlashMessage('New Date Date Field Test 1 created.');
+		browser.itemPage.assertInputs({
+			listName: 'Date',
+			fields: {
+				'name': {value: 'Date Field Test 1'},
+				'fieldA': {value: '2016-01-01'},
+			}
+		})
 	},
-	after: function (browser) {
-		browser.app.signout();
-		browser.end();
-	},
-	'Date field can be filled via the initial modal': function (browser) {
-		browser.app
-			.click('@fieldListsMenu')
-			.waitForElementVisible('@listScreen')
-			.click('@dateListSubmenu')
-			.waitForElementVisible('@listScreen');
-
-		browser.listPage
-			.click('@createFirstItemButton');
-
-		browser.app
-			.waitForElementVisible('@initialFormScreen');
-
-		browser.initialFormPage.section.form.section.dateList.section.name
-			.fillInput({value: 'Date Field Test 1'});
-
-		browser.initialFormPage.section.form.section.dateList.section.name
-			.verifyInput({value: 'Date Field Test 1'});
-
-		browser.initialFormPage.section.form.section.dateList.section.fieldA
-			.fillInput({value: '2016-01-01'});
-
-		browser.initialFormPage.section.form.section.dateList.section.fieldA
-			.verifyInput({value: '2016-01-01'});
-
-		browser.initialFormPage.section.form
-			.click('@createButton');
-
-		browser.app
-			.waitForElementVisible('@itemScreen');
-
-		browser.itemPage
-			.expect.element('@flashMessage')
-			.text.to.equal('New Date Date Field Test 1 created.');
-
-		browser.itemPage.section.form.section.dateList.section.name
-			.verifyInput({value: 'Date Field Test 1'});
-
-		browser.itemPage.section.form.section.dateList.section.fieldA
-			.verifyInput({value: '2016-01-01'});
-	},
-	'Date field can be filled via the edit form': function (browser) {
-		browser.itemPage.section.form.section.dateList.section.fieldB
-			.fillInput({value: '2016-01-02'});
-
-		browser.itemPage.section.form
-			.click('@saveButton');
-
-		browser.app
-			.waitForElementVisible('@itemScreen');
-
-		browser.itemPage
-			.expect.element('@flashMessage')
-			.text.to.equal('Your changes have been saved.');
-
-		browser.itemPage.section.form.section.dateList.section.name
-			.verifyInput({value: 'Date Field Test 1'});
-
-		browser.itemPage.section.form.section.dateList.section.fieldB
-			.verifyInput({value: '2016-01-02'});
-	},
-	// UNDO ANY STATE CHANGES -- THIS TEST SHOULD RUN LAST
-	'restoring test state': function (browser) {
+	'Date field can be filled via the edit form': function(browser) {
+		browser.itemPage.fillInputs({
+			listName: 'Date',
+			fields: {
+				'fieldB': {value: '2016-01-02'}
+			}
+		});
+		browser.itemPage.save();
+		browser.itemPage.assertFlashMessage('Your changes have been saved.');
+		browser.itemPage.assertInputs({
+			listName: 'Date',
+			fields: {
+				'name': {value: 'Date Field Test 1'},
+				'fieldA': {value: '2016-01-01'},
+				'fieldB': {value: '2016-01-02'}
+			}
+		})
 	},
 };

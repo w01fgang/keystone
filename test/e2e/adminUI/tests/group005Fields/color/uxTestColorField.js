@@ -1,83 +1,53 @@
+var fieldTests = require('../commonFieldTestUtils.js');
+
 module.exports = {
-	before: function (browser) {
-		browser.app = browser.page.app();
-		browser.signinPage = browser.page.signin();
-		browser.listPage = browser.page.list();
-		browser.itemPage = browser.page.item();
-		browser.initialFormPage = browser.page.initialForm();
-
-		browser.app.navigate();
-		browser.app.waitForElementVisible('@signinScreen');
-
-		browser.signinPage.signin();
-		browser.app.waitForElementVisible('@homeScreen');
+	before: fieldTests.before,
+	after: fieldTests.after,
+	'Color field can be filled via the initial modal': function(browser) {
+		browser.app.openFieldList('Color');
+		browser.listPage.createFirstItem();
+		browser.app.waitForInitialFormScreen();
+		browser.initialFormPage.fillInputs({
+			listName: 'Color',
+			fields: {
+				'name': {value: 'Color Field Test 1'},
+				'fieldA': {value: '#002147'},
+			}
+		});
+		browser.initialFormPage.assertInputs({
+			listName: 'Color',
+			fields: {
+				'name': {value: 'Color Field Test 1'},
+				'fieldA': {value: '#002147'},
+			}
+		});
+		browser.initialFormPage.save();
+		browser.app.waitForItemScreen();
+		browser.itemPage.assertFlashMessage('New Color Color Field Test 1 created.');
+		browser.itemPage.assertInputs({
+			listName: 'Color',
+			fields: {
+				'name': {value: 'Color Field Test 1'},
+				'fieldA': {value: '#002147'},
+			}
+		})
 	},
-	after: function (browser) {
-		browser.app.signout();
-		browser.end();
-	},
-	'Color field can be filled via the initial modal': function (browser) {
-		browser.app
-			.click('@fieldListsMenu')
-			.waitForElementVisible('@listScreen')
-			.click('@colorListSubmenu')
-			.waitForElementVisible('@listScreen');
-
-		browser.listPage
-			.click('@createFirstItemButton');
-
-		browser.app
-			.waitForElementVisible('@initialFormScreen');
-
-		browser.initialFormPage.section.form.section.colorList.section.name
-			.fillInput({value: 'Color Field Test 1'});
-
-		browser.initialFormPage.section.form.section.colorList.section.name
-			.verifyInput({value: 'Color Field Test 1'});
-
-		browser.initialFormPage.section.form.section.colorList.section.fieldA
-			.fillInput({value: '#002147'});
-
-		browser.initialFormPage.section.form.section.colorList.section.fieldA
-			.verifyInput({value: '#002147'});
-
-		browser.initialFormPage.section.form
-			.click('@createButton');
-
-		browser.app
-			.waitForElementVisible('@itemScreen');
-
-		browser.itemPage
-			.expect.element('@flashMessage')
-			.text.to.equal('New Color Color Field Test 1 created.');
-
-		browser.itemPage.section.form.section.colorList.section.name
-			.verifyInput({value: 'Color Field Test 1'});
-
-		browser.itemPage.section.form.section.colorList.section.fieldA
-			.verifyInput({value: '#002147'});
-	},
-	'Color field can be filled via the edit form': function (browser) {
-		browser.itemPage.section.form.section.colorList.section.fieldB
-			.fillInput({value: '#f8e71c'});
-
-		browser.itemPage.section.form
-			.click('@saveButton');
-
-		browser.app
-			.waitForElementVisible('@itemScreen');
-
-		browser.itemPage
-			.expect.element('@flashMessage')
-			.text.to.equal('Your changes have been saved.');
-
-		browser.itemPage.section.form.section.colorList.section.name
-			.verifyInput({value: 'Color Field Test 1'});
-
-		browser.itemPage.section.form.section.colorList.section.fieldB
-			.verifyInput({value: '#f8e71c'});
-	},
-	// UNDO ANY STATE CHANGES -- THIS TEST SHOULD RUN LAST
-	'restoring test state': function (browser) {
+	'Color field can be filled via the edit form': function(browser) {
+		browser.itemPage.fillInputs({
+			listName: 'Color',
+			fields: {
+				'fieldB': {value: '#f8e71c'}
+			}
+		});
+		browser.itemPage.save();
+		browser.itemPage.assertFlashMessage('Your changes have been saved.');
+		browser.itemPage.assertInputs({
+			listName: 'Color',
+			fields: {
+				'name': {value: 'Color Field Test 1'},
+				'fieldA': {value: '#002147'},
+				'fieldB': {value: '#f8e71c'}
+			}
+		})
 	},
 };

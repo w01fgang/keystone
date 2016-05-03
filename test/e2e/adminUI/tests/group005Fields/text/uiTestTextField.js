@@ -1,46 +1,20 @@
+var fieldTests = require('../commonFieldTestUtils.js');
+
 module.exports = {
-	before: function (browser) {
-		browser
-		browser.app = browser.page.app();
-		browser.signinPage = browser.page.signin();
-		browser.listPage = browser.page.list();
-		browser.initialFormPage = browser.page.initialForm();
+	before: fieldTests.before,
+	after: fieldTests.after,
+	'Text field should show correctly in the initial modal': function (browser) {
+		browser.app.openFieldList('Text');
+		browser.listPage.createFirstItem();
+		browser.app.waitForInitialFormScreen();
 
-		browser.app.navigate();
-		browser.app.waitForElementVisible('@signinScreen');
-
-		browser.signinPage.signin();
-		browser.app.waitForElementVisible('@homeScreen');
+		browser.initialFormPage.assertUI({
+			listName: 'Text',
+			fields: ['name', 'fieldA']
+		});
 	},
-	after: function (browser) {
-		browser.app.signout();
-		browser.end();
-	},
-	'Text field should be visible in initial modal': function (browser) {
-		browser.app
-			.click('@fieldListsMenu')
-			.waitForElementVisible('@listScreen')
-			.click('@textListSubmenu')
-			.waitForElementVisible('@listScreen');
-
-		browser.listPage
-			.click('@createFirstItemButton');
-
-		browser.app
-			.waitForElementVisible('@initialFormScreen');
-
-		browser.initialFormPage.section.form.section.textList.section.name
-			.verifyUI();
-
-		browser.initialFormPage.section.form.section.textList.section.fieldA
-			.verifyUI();
-	},
-	// UNDO ANY STATE CHANGES -- THIS TEST SHOULD RUN LAST
-	'restoring test state': function (browser) {
-		browser.initialFormPage.section.form
-			.click('@cancelButton');
-
-		browser.app
-			.waitForElementVisible('@listScreen');
+	'restoring test state': function(browser) {
+		browser.initialFormPage.cancel();
+		browser.app.waitForListScreen();
 	},
 };
