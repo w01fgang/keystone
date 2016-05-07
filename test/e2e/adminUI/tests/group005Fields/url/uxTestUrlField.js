@@ -11,24 +11,24 @@ module.exports = {
 			listName: 'Url',
 			fields: {
 				'name': {value: 'Url Field Test 1'},
-				'fieldA': {value: 'www.example1.com'},
+				'fieldA': {value: 'http://www.example1.com'},
 			}
 		});
 		browser.initialFormPage.assertInputs({
 			listName: 'Url',
 			fields: {
 				'name': {value: 'Url Field Test 1'},
-				'fieldA': {value: 'www.example1.com'},
+				'fieldA': {value: 'http://www.example1.com'},
 			}
 		});
 		browser.initialFormPage.save();
 		browser.app.waitForItemScreen();
-		browser.itemPage.assertFlashMessage('New Url Url Field Test 1 created.');
+
 		browser.itemPage.assertInputs({
 			listName: 'Url',
 			fields: {
 				'name': {value: 'Url Field Test 1'},
-				'fieldA': {value: 'www.example1.com'},
+				'fieldA': {value: 'http://www.example1.com'},
 			}
 		})
 	},
@@ -36,17 +36,17 @@ module.exports = {
 		browser.itemPage.fillInputs({
 			listName: 'Url',
 			fields: {
-				'fieldB': {value: 'www.example2.com'}
+				'fieldB': {value: 'http://www.example2.com'}
 			}
 		});
 		browser.itemPage.save();
-		browser.itemPage.assertFlashMessage('Your changes have been saved.');
+		browser.itemPage.assertFlashMessage('Your changes have been saved successfully');
 		browser.itemPage.assertInputs({
 			listName: 'Url',
 			fields: {
 				'name': {value: 'Url Field Test 1'},
-				'fieldA': {value: 'www.example1.com'},
-				'fieldB': {value: 'www.example2.com'}
+				'fieldA': {value: 'http://www.example1.com'},
+				'fieldB': {value: 'http://www.example2.com'}
 			}
 		})
 	},

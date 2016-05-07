@@ -23,7 +23,7 @@ module.exports = {
 		});
 		browser.initialFormPage.save();
 		browser.app.waitForItemScreen();
-		browser.itemPage.assertFlashMessage('New Select Select Field Test 1 created.');
+		
 		browser.itemPage.assertInputs({
 			listName: 'Select',
 			fields: {
@@ -32,7 +32,6 @@ module.exports = {
 			}
 		})
 	},
-	/* Pending select's assertInput actually checking the given field
 	'Select field can be filled via the edit form': function(browser) {
 		browser.itemPage.fillInputs({
 			listName: 'Select',
@@ -41,7 +40,7 @@ module.exports = {
 			}
 		});
 		browser.itemPage.save();
-		browser.itemPage.assertFlashMessage('Your changes have been saved.');
+		browser.itemPage.assertFlashMessage('Your changes have been saved successfully');
 		browser.itemPage.assertInputs({
 			listName: 'Select',
 			fields: {
@@ -51,5 +50,4 @@ module.exports = {
 			}
 		})
 	},
-	*/
 };

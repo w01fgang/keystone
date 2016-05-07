@@ -8,9 +8,9 @@ module.exports = {
 	elements: {
 		// ADMIN UI APP SCREENS
 		signinScreen: '#signin-view',
-		homeScreen: '#home-view',
-		listScreen: '#list-view',
-		itemScreen: '#item-view',
+		homeScreen: 'div[data-screen-id="home"]',
+		listScreen: 'div[data-screen-id="list"]',
+		itemScreen: 'div[data-screen-id="item"]',
 		initialFormScreen: '.Modal-dialog',
 		deleteConfirmationScreen: '.Modal-dialog',
 		resetConfirmationScreen: '.Modal-dialog',
@@ -31,9 +31,11 @@ module.exports = {
 		colorListSubmenu: '.secondary-navbar [data-list-path="colors"]',
 		dateListSubmenu: '.secondary-navbar [data-list-path="dates"]',
 		datetimeListSubmenu: '.secondary-navbar [data-list-path="datetimes"]',
-		htmlListSubmenu: '.secondary-navbar [data-list-path="htmls"]',
 		emailListSubmenu: '.secondary-navbar [data-list-path="emails"]',
+		htmlListSubmenu: '.secondary-navbar [data-list-path="htmls"]',
+		markdownListSubmenu: '.secondary-navbar [data-list-path="markdowns"]',
 		nameListSubmenu: '.secondary-navbar [data-list-path="names"]',
+		passwordListSubmenu: '.secondary-navbar [data-list-path="passwords"]',
 		selectListSubmenu: '.secondary-navbar [data-list-path="selects"]',
 		textListSubmenu: '.secondary-navbar [data-list-path="texts"]',
 		textareaListSubmenu: '.secondary-navbar [data-list-path="textareas"]',
@@ -55,17 +57,33 @@ module.exports = {
 				.click('@logoutIconLink')
 				.waitForElementVisible('@signinScreen');
 		},
-		waitForInitialFormScreen() {
+		waitForSigninScreen: function() {
+			return this
+				.waitForElementVisible('@signinScreen');
+		},
+		waitForHomeScreen: function() {
+			return this
+				.waitForElementVisible('@homeScreen');
+		},
+		waitForInitialFormScreen: function() {
 			return this
 				.waitForElementVisible('@initialFormScreen');
 		},
-		waitForItemScreen() {
+		waitForDeleteConfirmationScreen: function() {
+			return this
+				.waitForElementVisible('@deleteConfirmationScreen');
+		},
+		waitForResetConfirmationScreen: function() {
+			return this
+				.waitForElementVisible('@resetConfirmationScreen');
+		},
+		waitForListScreen: function() {
+			return this
+				.waitForElementVisible('@listScreen');
+		},
+		waitForItemScreen: function() {
 			return this
 				.waitForElementVisible('@itemScreen');
 		},
-		waitForListScreen() {
-			return this
-				.waitForElementVisible('@listScreen');
-		}
 	}],
 };
