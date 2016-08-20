@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Container } from 'elemental';
+import { Container } from '../../../elemental';
 import PrimaryNavItem from './NavItem';
 
 var PrimaryNavigation = React.createClass({
@@ -45,29 +45,41 @@ var PrimaryNavigation = React.createClass({
 			</PrimaryNavItem>
 		);
 	},
+	// Render the back button
+	renderBackButton () {
+		if (!Keystone.backUrl) return null;
+
+		return (
+			<PrimaryNavItem
+				label="octicon-globe"
+				href={Keystone.backUrl}
+				title={'Front page - ' + this.props.brand}
+			>
+				<span className="octicon octicon-globe" />
+			</PrimaryNavItem>
+		);
+	},
 	// Render the link to the webpage
 	renderFrontLink () {
 		return (
 			<ul className="app-nav app-nav--primary app-nav--right">
-				<PrimaryNavItem
-					label="octicon-globe"
-					href={Keystone.backUrl}
-					title={'Front page - ' + this.props.brand}
-				>
-					<span className="octicon octicon-globe" />
-				</PrimaryNavItem>
+				{this.renderBackButton()}
 				{this.renderSignout()}
 			</ul>
 		);
 	},
 	renderBrand () {
 		// TODO: support navbarLogo from keystone config
+
+		const { brand, currentSectionKey } = this.props;
+		const className = currentSectionKey === 'dashboard' ? 'primary-navbar__brand primary-navbar__item--active' : 'primary-navbar__brand';
+
 		return (
 			<PrimaryNavItem
+				className={className}
 				label="octicon-home"
-				className={this.props.currentSectionKey === 'dashboard' ? 'active' : null}
+				title={'Dashboard - ' + brand}
 				to={Keystone.adminPath}
-				title={'Dashboard - ' + this.props.brand}
 			>
 				<span className="octicon octicon-home" />
 			</PrimaryNavItem>
@@ -80,7 +92,7 @@ var PrimaryNavigation = React.createClass({
 		return this.props.sections.map((section) => {
 			// Get the link and the class name
 			const href = section.lists[0].external ? section.lists[0].path : `${Keystone.adminPath}/${section.lists[0].path}`;
-			const className = (this.props.currentSectionKey && this.props.currentSectionKey === section.key) ? 'active' : null;
+			const className = (this.props.currentSectionKey && this.props.currentSectionKey === section.key) ? 'primary-navbar__item--active' : null;
 
 			return (
 				<PrimaryNavItem
@@ -99,7 +111,7 @@ var PrimaryNavigation = React.createClass({
 
 		return (
 			<nav className="primary-navbar">
-				<Container clearfix>
+				<Container clearFloatingChildren>
 					<ul className="app-nav app-nav--primary app-nav--left">
 						{this.renderBrand()}
 						{this.renderNavigation()}

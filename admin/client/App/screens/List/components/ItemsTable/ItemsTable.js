@@ -2,9 +2,9 @@ import React, { PropTypes } from 'react';
 import classnames from 'classnames';
 
 import TableRow from './ItemsTableRow';
-import DrapDrop from './ItemsTableDragDrop';
+import DragDrop from './ItemsTableDragDrop';
 
-import { TABLE_CONTROL_COLUMN_WIDTH } from '../../../../../utils/constants';
+import { TABLE_CONTROL_COLUMN_WIDTH } from '../../../../../constants';
 
 const ItemsTable = React.createClass({
 	propTypes: {
@@ -98,7 +98,7 @@ const ItemsTable = React.createClass({
 		if (!items.results.length) return null;
 
 		const tableBody = (this.props.list.sortable) ? (
-			<DrapDrop { ...this.props } />
+			<DragDrop {...this.props} />
 		) : (
 			<tbody >
 				{items.results.map((item, i) => {
@@ -109,7 +109,7 @@ const ItemsTable = React.createClass({
 							sortOrder={item.sortOrder || 0}
 							id={item.id}
 							item={item}
-							{ ...this.props }
+							{...this.props}
 						/>
 					);
 				})}

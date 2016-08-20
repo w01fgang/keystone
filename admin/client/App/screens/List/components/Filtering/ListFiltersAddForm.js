@@ -1,7 +1,8 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import filters from '../../../../../utils/filters';
+import { findDOMNode } from 'react-dom';
 import Popout from '../../../../shared/Popout';
+
+import { Filters } from 'FieldTypes';
 
 var ListFiltersAddForm = React.createClass({
 	propTypes: {
@@ -12,7 +13,7 @@ var ListFiltersAddForm = React.createClass({
 		onHeightChange: React.PropTypes.func,
 	},
 	getInitialState () {
-		const filterComponent = filters[this.props.field.type];
+		const filterComponent = Filters[this.props.field.type];
 		let filterValue = this.props.activeFilters.filter(i => i.field.path === this.props.field.path)[0];
 		if (filterValue) {
 			filterValue = filterValue.value;
@@ -26,7 +27,7 @@ var ListFiltersAddForm = React.createClass({
 	},
 	updateHeight (bodyHeight) {
 		bodyHeight += 40; // TODO: remove magic number, currently accounts for padding
-		const footerHeight = ReactDOM.findDOMNode(this.refs.footer).offsetHeight;
+		const footerHeight = findDOMNode(this.refs.footer).offsetHeight;
 		const maxBodyHeight = this.props.maxHeight - footerHeight;
 		const newHeight = bodyHeight + footerHeight;
 		// console.log(bodyHeight, maxBodyHeight, '|', newHeight, this.props.maxHeight);

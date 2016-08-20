@@ -6,6 +6,7 @@
 const listToArray = require('list-to-array');
 const qs = require('qs');
 const xhr = require('xhr');
+const assign = require('object-assign');
 // Filters for truthy elements in an array
 const truthy = (i) => i;
 
@@ -63,7 +64,7 @@ function buildQueryString (options) {
 	const query = {};
 	if (options.search) query.search = options.search;
 	if (options.filters.length) query.filters = JSON.stringify(getFilters(options.filters));
-	if (options.columns) query.select = options.columns.map(i => i.path).join(',');
+	if (options.columns) query.fields = options.columns.map(i => i.path).join(',');
 	if (options.page && options.page.size) query.limit = options.page.size;
 	if (options.page && options.page.index > 1) query.skip = (options.page.index - 1) * options.page.size;
 	if (options.sort) query.sort = getSortString(options.sort);
@@ -78,7 +79,7 @@ function buildQueryString (options) {
  */
 const List = function (options) {
 	// TODO these options are possibly unused
-	Object.assign(this, options);
+	assign(this, options);
 	this.columns = getColumns(this);
 	this.expandedDefaultColumns = this.expandColumns(this.defaultColumns);
 	this.defaultColumnPaths = this.expandedDefaultColumns.map(i => i.path).join(',');
@@ -92,7 +93,7 @@ const List = function (options) {
  */
 List.prototype.createItem = function (formData, callback) {
 	xhr({
-		url: `${Keystone.adminPath}/api/legacy/${this.path}/create`,
+		url: `${Keystone.adminPath}/api/${this.path}/create`,
 		responseType: 'json',
 		method: 'POST',
 		headers: Keystone.csrf.header,
@@ -120,13 +121,13 @@ List.prototype.createItem = function (formData, callback) {
  */
 List.prototype.updateItem = function (id, formData, callback) {
 	xhr({
-		url: `${Keystone.adminPath}/api/legacy/${this.path}/${id}`,
+		url: `${Keystone.adminPath}/api/${this.path}/${id}`,
 		responseType: 'json',
 		method: 'POST',
 		headers: Keystone.csrf.header,
 		body: formData,
 	}, (err, resp, data) => {
-		if (err) callback(err);
+		if (err) return callback(err);
 		if (resp.statusCode === 200) {
 			callback(null, data);
 		} else {
@@ -140,23 +141,31 @@ List.prototype.expandColumns = function (input) {
 	const cols = listToArray(input).map(i => {
 		const split = i.split('|');
 		let path = split[0];
+		let width = split[1];
 		if (path === '__name__') {
 			path = this.namePath;
-		}
-		if (path === this.namePath) {
-			nameIncluded = true;
 		}
 		const field = this.fields[path];
 		if (!field) {
 			// TODO: Support arbitary document paths
-			console.warn('Invalid Column specified:', i);
+			if (!this.hidden) {
+				if (path === this.namePath) {
+					console.warn(`List ${this.key} did not specify any default columns or a name field`);
+				} else {
+					console.warn(`List ${this.key} specified an invalid default column: ${path}`);
+				}
+			}
 			return;
+		}
+		if (path === this.namePath) {
+			nameIncluded = true;
 		}
 		return {
 			field: field,
-			type: field.type,
 			label: field.label,
 			path: field.path,
+			type: field.type,
+			width: width,
 		};
 	}).filter(truthy);
 	if (!nameIncluded) {

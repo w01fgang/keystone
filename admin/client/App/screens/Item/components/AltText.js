@@ -1,51 +1,82 @@
-import React from 'react';
-import blacklist from 'blacklist';
+import React, { Component, PropTypes } from 'react';
 import vkey from 'vkey';
 
-var AltText = React.createClass({
-	propTypes: {
-		component: React.PropTypes.string,
-		modified: React.PropTypes.string,
-		modifier: React.PropTypes.string,
-		normal: React.PropTypes.string,
-	},
-	getDefaultProps () {
-		return {
-			component: 'span',
-			modifier: '<alt>',
-			normal: '',
-			modified: '',
-		};
-	},
-	getInitialState () {
-		return {
+class AltText extends Component {
+	constructor () {
+		super();
+
+		this.handleKeyDown = this.handleKeyDown.bind(this);
+		this.handleKeyUp = this.handleKeyUp.bind(this);
+
+		this.state = {
 			modified: false,
 		};
-	},
+	}
 	componentDidMount () {
 		document.body.addEventListener('keydown', this.handleKeyDown, false);
 		document.body.addEventListener('keyup', this.handleKeyUp, false);
-	},
+	}
 	componentWillUnmount () {
 		document.body.removeEventListener('keydown', this.handleKeyDown);
 		document.body.removeEventListener('keyup', this.handleKeyUp);
-	},
+	}
 	handleKeyDown (e) {
 		if (vkey[e.keyCode] !== this.props.modifier) return;
 		this.setState({
 			modified: true,
 		});
-	},
+	}
 	handleKeyUp (e) {
 		if (vkey[e.keyCode] !== this.props.modifier) return;
 		this.setState({
 			modified: false,
 		});
-	},
+	}
 	render () {
-		var props = blacklist(this.props, 'component', 'modifier', 'normal', 'modified');
-		return React.createElement(this.props.component, props, this.state.modified ? this.props.modified : this.props.normal);
-	},
-});
+		// NOTE `modifier` is declared to remove it from `props`, though never used
+		const {
+			component,
+			modified,
+			modifier, // eslint-disable-line no-unused-vars
+			normal,
+			...props,
+		} = this.props;
+
+		const Component = component;
+
+		props.children = this.state.modified
+			? modified
+			: normal;
+
+		return <Component {...props} />;
+	}
+};
+
+const SUPPORTED_KEYS = [
+	'<alt>',
+	'<control>',
+	'<meta>',
+	'<shift>',
+];
+
+AltText.propTypes = {
+	component: PropTypes.oneOfType([
+		PropTypes.func,
+		PropTypes.string,
+	]),
+	modified: PropTypes.oneOfType([
+		PropTypes.element,
+		PropTypes.string,
+	]),
+	modifier: PropTypes.oneOf(SUPPORTED_KEYS),
+	normal: PropTypes.oneOfType([
+		PropTypes.element,
+		PropTypes.string,
+	]),
+};
+AltText.defaultProps = {
+	component: 'span',
+	modifier: '<alt>',
+};
 
 module.exports = AltText;

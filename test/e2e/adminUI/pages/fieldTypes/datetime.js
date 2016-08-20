@@ -2,10 +2,7 @@ var utils = require('../../../utils');
 
 module.exports = function DatetimeType(config) {
 	var self = {
-		// TODO
-		// Pending a fix for issue #2715 the selector line should read the following
-		// selector: '.field-type-datetime[for="' + config.fieldName + '"]',
-		selector: '.field-type-datetime',
+		selector: '.field-type-datetime[for="' + config.fieldName + '"]',
 		elements: {
 			label: '.FormLabel',
 			nowButton: '.Button--default',
@@ -15,7 +12,7 @@ module.exports = function DatetimeType(config) {
 			timePlaceholder: 'input[placeholder="HH:MM:SS am/pm"]',
 		},
 		commands: [{
-			verifyUI: function() {
+			assertUI: function() {
 				this
 					.expect.element('@label').to.be.visible;
 				this
@@ -45,11 +42,11 @@ module.exports = function DatetimeType(config) {
 				this
 					.getValue('@date', function(result) {
 						this.api.assert.equal(result.value, input.date);
-					});
+					}.bind(this));
 				this
 					.getValue('@time', function(result) {
 						this.api.assert.equal(result.value, input.time);
-					});
+					}.bind(this));
 				return this;
 			},
 		}],

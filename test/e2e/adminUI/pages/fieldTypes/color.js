@@ -1,17 +1,16 @@
 var utils = require('../../../utils');
 
 module.exports = function ColorType(config) {
-	var self = {
+	return {
 		selector: '.field-type-color[for="' + config.fieldName + '"]',
 		elements: {
 			label: '.FormLabel',
 			value: 'input[name="' + config.fieldName + '"]',
-      button: '.field-type-color__button',
-      swatch: '.field-type-color__swatch',
-      picker: '.field-type-color__picker',
+			button: '.e2e-type-color__button',
+			swatch: '.e2e-type-color__swatch',
 		},
 		commands: [{
-			verifyUI: function() {
+			assertUI: function() {
 				this
 					.expect.element('@label').to.be.visible;
 				this
@@ -20,8 +19,6 @@ module.exports = function ColorType(config) {
 					.expect.element('@value').to.be.visible;
 				this
 					.expect.element('@button').to.be.visible;
-				this
-					.expect.element('@picker').to.be.visible;
 				return this;
 			},
 			fillInput: function(input) {
@@ -37,11 +34,9 @@ module.exports = function ColorType(config) {
 					.getValue('@value', function (result) {
 						this.api.assert.equal(result.state, "success");
 						this.api.assert.equal(result.value, input.value);
-					});
+					}.bind(this));
 				return this;
 			},
 		}],
 	};
-
-	return self;
 };

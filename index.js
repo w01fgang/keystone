@@ -24,8 +24,9 @@ var moduleRoot = (function (_rootPath) {
  * @api public
  */
 var Keystone = function () {
-	grappling.mixin(this).allowHooks('pre:static', 'pre:bodyparser', 'pre:session', 'pre:routes', 'pre:render', 'updates', 'signout', 'signin', 'pre:logger');
+	grappling.mixin(this).allowHooks('pre:static', 'pre:bodyparser', 'pre:session', 'pre:logger', 'pre:admin', 'pre:routes', 'pre:render', 'updates', 'signin', 'signout');
 	this.lists = {};
+	this.fieldTypes = {};
 	this.paths = {};
 	this._options = {
 		'name': 'Keystone',
@@ -86,6 +87,7 @@ var Keystone = function () {
 
 	// init mongoose
 	this.set('mongoose', require('mongoose'));
+	this.mongoose.Promise = require('es6-promise').Promise;
 
 	// Attach middleware packages, bound to this instance
 	this.middleware = {
@@ -118,11 +120,16 @@ Keystone.prototype.initExpressSession = require('./lib/core/initExpressSession')
 Keystone.prototype.initNav = require('./lib/core/initNav');
 Keystone.prototype.list = require('./lib/core/list');
 Keystone.prototype.openDatabaseConnection = require('./lib/core/openDatabaseConnection');
+Keystone.prototype.closeDatabaseConnection = require('./lib/core/closeDatabaseConnection');
 Keystone.prototype.populateRelated = require('./lib/core/populateRelated');
 Keystone.prototype.redirect = require('./lib/core/redirect');
-Keystone.prototype.render = require('./lib/core/render');
 Keystone.prototype.start = require('./lib/core/start');
 Keystone.prototype.wrapHTMLError = require('./lib/core/wrapHTMLError');
+
+/* Deprecation / Change warnings for 0.4 */
+Keystone.prototype.routes = function () {
+	throw new Error('keystone.routes(fn) has been removed, use keystone.set(\'routes\', fn)');
+};
 
 
 /**
@@ -132,6 +139,14 @@ Keystone.prototype.wrapHTMLError = require('./lib/core/wrapHTMLError');
  */
 var keystone = module.exports = new Keystone();
 
+/*
+	Note: until #1777 is complete, the order of execution here with the requires
+	(specifically, they happen _after_ the module.exports above) is really
+	important. As soon as the circular dependencies are sorted out to get their
+	keystone instance from a closure or reference on {this} we can move these
+	bindings into the Keystone constructor.
+*/
+
 // Expose modules and Classes
 keystone.Admin = {
 	Server: require('./admin/server'),
@@ -140,7 +155,8 @@ keystone.Email = require('./lib/email');
 keystone.Field = require('./fields/types/Type');
 keystone.Field.Types = require('./lib/fieldTypes');
 keystone.Keystone = Keystone;
-keystone.List = require('./lib/list');
+keystone.List = require('./lib/list')(keystone);
+keystone.Storage = require('./lib/storage');
 keystone.View = require('./lib/view');
 
 keystone.content = require('./lib/content');

@@ -8,13 +8,14 @@
 import React from 'react';
 import { Container, Spinner } from 'elemental';
 import { connect } from 'react-redux';
+import { Link } from 'react-router';
 
-import Lists from '../../../utils/ListsByKey';
+import { listsByKey } from '../../../utils/lists';
 import CreateForm from '../../shared/CreateForm';
 import EditForm from './components/EditForm';
 import EditFormHeader from './components/EditFormHeader';
 import RelatedItemsList from './components/RelatedItemsList';
-import FlashMessages from '../../shared/FlashMessages';
+// import FlashMessages from '../../shared/FlashMessages';
 
 import {
 	selectItem,
@@ -45,6 +46,7 @@ var ItemView = React.createClass({
 		// We've opened a new item from the client side routing, so initialize
 		// again with the new item id
 		if (nextProps.params.itemId !== this.props.params.itemId) {
+			this.props.dispatch(selectList(nextProps.params.listId));
 			this.initializeItem(nextProps.params.itemId);
 		}
 	},
@@ -75,23 +77,54 @@ var ItemView = React.createClass({
 		const keys = Object.keys(relationships);
 		if (!keys.length) return;
 		return (
-			<div>
-				<h2>Relationships</h2>
-				{keys.map(key => {
-					const relationship = relationships[key];
-					const refList = Lists[relationship.path];
-					return (
-						<RelatedItemsList
-							key={relationship.path}
-							list={this.props.currentList}
-							refList={refList}
-							relatedItemId={this.props.params.itemId}
-							relationship={relationship}
-						/>
-					);
-				})}
+			<div className="Relationships">
+				<Container>
+					<h2>Relationships</h2>
+					{keys.map(key => {
+						const relationship = relationships[key];
+						const refList = listsByKey[relationship.ref];
+						return (
+							<RelatedItemsList
+								key={relationship.path}
+								list={this.props.currentList}
+								refList={refList}
+								relatedItemId={this.props.params.itemId}
+								relationship={relationship}
+							/>
+						);
+					})}
+				</Container>
 			</div>
 		);
+	},
+	// Handle errors
+	handleError (error) {
+		const detail = error.detail;
+		if (detail) {
+			// Item not found
+			if (detail.name === 'CastError'
+				&& detail.path === '_id') {
+				return (
+					<Container>
+						<p>Item not found!</p>
+						<Link to={`${Keystone.adminPath}/${this.props.routeParams.listId}`}>
+							Go to list
+						</Link>
+					</Container>
+				);
+			}
+		}
+		if (error.message) {
+			// Server down + possibly other errors
+			if (error.message === 'Internal XMLHttpRequest Error') {
+				return (
+					<Container>
+						<p>We encountered some network problems, please try refreshing!</p>
+					</Container>
+				);
+			}
+		}
+		return (<p>Error!</p>);
 	},
 	render () {
 		// If we don't have any data yet, show the loading indicator
@@ -102,38 +135,33 @@ var ItemView = React.createClass({
 				</div>
 			);
 		}
+
 		// When we have the data, render the item view with it
 		return (
 			<div data-screen-id="item">
-				{(this.props.error) ? (
-					<FlashMessages
-						messages={{
-							error: [{
-								title: "There's a problem with the network, we're trying to reconnect...",
-							}],
-						}}
-					/>
-				) : (
-					<Container>
-						<EditFormHeader
-							list={this.props.currentList}
-							data={this.props.data}
-							toggleCreate={this.toggleCreate}
-						/>
-						<CreateForm
-							list={this.props.currentList}
-							isOpen={this.state.createIsOpen}
-							onCancel={() => this.toggleCreate(false)}
-							onCreate={(item) => this.onCreate(item)}
-						/>
-						<EditForm
-							list={this.props.currentList}
-							data={this.props.data}
-							dispatch={this.props.dispatch}
-							router={this.context.router}
-						/>
+				{(this.props.error) ? this.handleError(this.props.error) : (
+					<div>
+						<Container>
+							<EditFormHeader
+								list={this.props.currentList}
+								data={this.props.data}
+								toggleCreate={this.toggleCreate}
+							/>
+							<CreateForm
+								list={this.props.currentList}
+								isOpen={this.state.createIsOpen}
+								onCancel={() => this.toggleCreate(false)}
+								onCreate={(item) => this.onCreate(item)}
+							/>
+							<EditForm
+								list={this.props.currentList}
+								data={this.props.data}
+								dispatch={this.props.dispatch}
+								router={this.context.router}
+							/>
+						</Container>
 						{this.renderRelationships()}
-					</Container>
+					</div>
 				)}
 			</div>
 		);

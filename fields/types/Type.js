@@ -48,7 +48,7 @@ function Field (list, path, options) {
 	this.path = path;
 
 	this.type = this.constructor.name;
-	this.options = utils.options(this.defaults, options);
+	this.options = _.defaults({}, options, this.defaults);
 	this.label = options.label || utils.keyToLabel(this.path);
 	this.typeDescription = options.typeDescription || this.typeDescription || this.type;
 
@@ -79,7 +79,7 @@ function Field (list, path, options) {
 	}
 
 	// Add the field to the schema
-	this.addToSchema();
+	this.addToSchema(this.list.schema);
 
 	// Add pre-save handler to the list if this field watches others
 	if (this.options.watch) {
@@ -141,7 +141,7 @@ Field.prototype.getSize = function () {
  * Gets default value for the field, based on the option or default for the type
  */
 Field.prototype.getDefaultValue = function () {
-	return this.options.default || '';
+	return typeof this.options.default !== 'undefined' ? this.options.default : '';
 };
 
 /**
@@ -237,9 +237,9 @@ definePrototypeGetters(Field, {
  * Default method to register the field on the List's Mongoose Schema.
  * Overridden by some fieldType Classes
  */
-Field.prototype.addToSchema = function () {
+Field.prototype.addToSchema = function (schema) {
 	var ops = (this._nativeType) ? _.defaults({ type: this._nativeType }, this.options) : this.options;
-	this.list.schema.path(this.path, ops);
+	schema.path(this.path, ops);
 	this.bindUnderscoreMethods();
 };
 
@@ -248,9 +248,9 @@ Field.prototype.addToSchema = function () {
  * Must be called by the field type's `addToSchema` method
  * Always includes the `update` method
  */
-Field.prototype.bindUnderscoreMethods = function (methods) {
+Field.prototype.bindUnderscoreMethods = function () {
 	var field = this;
-	(this._underscoreMethods || []).concat({ fn: 'updateItem', as: 'update' }, (methods || [])).forEach(function (method) {
+	(this._underscoreMethods || []).concat({ fn: 'updateItem', as: 'update' }).forEach(function (method) {
 		if (typeof method === 'string') {
 			method = { fn: method, as: method };
 		}

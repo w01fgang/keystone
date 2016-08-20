@@ -1,20 +1,22 @@
 import React from 'react';
-import { findDOMNode } from 'react-dom';
 import moment from 'moment';
+import assign from 'object-assign';
 import {
-	Button,
 	Col,
 	Form,
 	FormField,
 	FormInput,
 	ResponsiveText,
 	Row,
-	Spinner,
 } from 'elemental';
+// import { css, StyleSheet } from 'aphrodite/no-important';
+import { Fields } from 'FieldTypes';
+import { fade } from '../../../../utils/color';
+import theme from '../../../../theme';
 
+import { Button, LoadingButton } from '../../../elemental';
 import AlertMessages from '../../../shared/AlertMessages';
 import ConfirmationDialog from './../../../shared/ConfirmationDialog';
-import Fields from '../../../../utils/fields';
 
 import FormHeading from './FormHeading';
 import AltText from './AltText';
@@ -36,6 +38,15 @@ function getNameFromData (data) {
 	return data;
 }
 
+function smoothScrollTop () {
+	if (document.body.scrollTop || document.documentElement.scrollTop) {
+		window.scrollBy(0, -50);
+		var timeOut = setTimeout(smoothScrollTop, 20);
+	}	else {
+		clearTimeout(timeOut);
+	}
+}
+
 var EditForm = React.createClass({
 	displayName: 'EditForm',
 	propTypes: {
@@ -44,14 +55,14 @@ var EditForm = React.createClass({
 	},
 	getInitialState () {
 		return {
-			values: Object.assign({}, this.props.data.fields),
+			values: assign({}, this.props.data.fields),
 			confirmationDialog: null,
 			loading: false,
 			lastValues: null, // used for resetting
 		};
 	},
 	getFieldProps (field) {
-		const props = Object.assign({}, field);
+		const props = assign({}, field);
 		const alerts = this.state.alerts;
 		// Display validation errors inline
 		if (alerts && alerts.error && alerts.error.error === 'validation errors') {
@@ -69,7 +80,7 @@ var EditForm = React.createClass({
 		return props;
 	},
 	handleChange (event) {
-		const values = Object.assign({}, this.state.values);
+		const values = assign({}, this.state.values);
 
 		values[event.path] = event.value;
 		this.setState({ values });
@@ -78,7 +89,7 @@ var EditForm = React.createClass({
 		const confirmationDialog = (
 			<ConfirmationDialog
 				isOpen
-				body={`Reset your changes to <strong>${this.props.data.name}</strong>?`}
+				body={<p>Reset your changes to <strong>{this.props.data.name}</strong>?</p>}
 				confirmationLabel="Reset"
 				onCancel={this.removeConfirmationDialog}
 				onConfirmation={this.handleReset}
@@ -89,7 +100,7 @@ var EditForm = React.createClass({
 	},
 	handleReset () {
 		this.setState({
-			values: Object.assign({}, this.state.lastValues || this.props.data.fields),
+			values: assign({}, this.state.lastValues || this.props.data.fields),
 			confirmationDialog: null,
 		});
 	},
@@ -97,7 +108,7 @@ var EditForm = React.createClass({
 		const confirmationDialog = (
 			<ConfirmationDialog
 				isOpen
-				body={`Are you sure you want to delete <strong>${this.props.data.name}?</strong><br /><br />This cannot be undone.`}
+				body={<p>Are you sure you want to delete <strong>{this.props.data.name}?</strong><br /><br />This cannot be undone.</p>}
 				confirmationLabel="Delete"
 				onCancel={this.removeConfirmationDialog}
 				onConfirmation={this.handleDelete}
@@ -110,7 +121,7 @@ var EditForm = React.createClass({
 		this.props.dispatch(deleteItem(data.id, this.props.router));
 	},
 	handleKeyFocus () {
-		const input = findDOMNode(this.refs.keyOrIdInput);
+		const input = this.refs.keyOrIdInput;
 		input.select();
 	},
 	removeConfirmationDialog () {
@@ -129,8 +140,7 @@ var EditForm = React.createClass({
 		});
 
 		list.updateItem(data.id, formData, (err, data) => {
-			// TODO: implement smooth scolling
-			scrollTo(0, 0); // Scroll to top
+			smoothScrollTop();
 			if (err) {
 				this.setState({
 					alerts: {
@@ -162,15 +172,13 @@ var EditForm = React.createClass({
 			return (
 				<div className={className}>
 					<AltText
-						normal={`${upcase(list.autokey.path)}: `}
 						modified="ID:"
-						component="span"
+						normal={`${upcase(list.autokey.path)}: `}
 						title="Press <alt> to reveal the ID"
 						className="EditForm__key-or-id__label" />
 					<AltText
-						normal={<input ref="keyOrIdInput" onFocus={this.handleKeyFocus} value={this.props.data[list.autokey.path]} className="EditForm__key-or-id__input" readOnly />}
 						modified={<input ref="keyOrIdInput" onFocus={this.handleKeyFocus} value={this.props.data.id} className="EditForm__key-or-id__input" readOnly />}
-						component="span"
+						normal={<input ref="keyOrIdInput" onFocus={this.handleKeyFocus} value={this.props.data[list.autokey.path]} className="EditForm__key-or-id__input" readOnly />}
 						title="Press <alt> to reveal the ID"
 						className="EditForm__key-or-id__field" />
 				</div>
@@ -250,38 +258,39 @@ var EditForm = React.createClass({
 		}, this);
 	},
 	renderFooterBar () {
-		var buttons = [
-			<Button
-				key="save"
-				type="primary"
-				disabled={this.state.loading}
-				onClick={() => this.updateItem()}
-			>
-				{this.state.loading ? (
-					<span>
-						<Spinner type="inverted" />
-						&nbsp;Saving
-					</span>
-				) : (
-					'Save'
-				)}
-			</Button>,
-		];
-		buttons.push(
-			<Button key="reset" onClick={this.confirmReset} type="link-cancel">
-				<ResponsiveText hiddenXS="reset changes" visibleXS="reset" />
-			</Button>
-		);
-		if (!this.props.list.nodelete) {
-			buttons.push(
-				<Button key="del" onClick={this.confirmDelete} type="link-delete" className="u-float-right">
-					<ResponsiveText hiddenXS={`delete ${this.props.list.singular.toLowerCase()}`} visibleXS="delete" />
-				</Button>
-			);
-		}
+		const { loading } = this.state;
+		const loadingButtonText = loading ? 'Saving' : 'Save';
+
+		// Padding must be applied inline so the FooterBar can determine its
+		// innerHeight at runtime. Aphrodite's styling comes later...
+
 		return (
-			<FooterBar className="EditForm__footer">
-				{buttons}
+			<FooterBar style={styles.footerbar}>
+				<div style={styles.footerbarInner}>
+					<LoadingButton
+						color="primary"
+						disabled={loading}
+						loading={loading}
+						onClick={this.updateItem}
+						data-button="update"
+					>
+						{loadingButtonText}
+					</LoadingButton>
+					<Button disabled={loading} onClick={this.confirmReset} variant="link" color="cancel" data-button="reset">
+						<ResponsiveText
+							hiddenXS="reset changes"
+							visibleXS="reset"
+						/>
+					</Button>
+					{!this.props.list.nodelete && (
+						<Button disabled={loading} onClick={this.confirmDelete} variant="link" color="delete" style={styles.deleteButton} data-button="delete">
+							<ResponsiveText
+								hiddenXS={`delete ${this.props.list.singular.toLowerCase()}`}
+								visibleXS="delete"
+							/>
+						</Button>
+					)}
+				</div>
 			</FooterBar>
 		);
 	},
@@ -350,13 +359,11 @@ var EditForm = React.createClass({
 	},
 	render () {
 		return (
-			<form ref="editForm" method="post" encType="multipart/form-data" className="EditForm-container">
+			<form ref="editForm" className="EditForm-container">
+				{(this.state.alerts) ? <AlertMessages alerts={this.state.alerts} /> : null}
 				<Row>
 					<Col lg="3/4">
-						{(this.state.alerts) ? <AlertMessages alerts={this.state.alerts} /> : null}
 						<Form type="horizontal" className="EditForm" component="div">
-							<input type="hidden" name="action" value="updateItem" />
-							<input type="hidden" name={Keystone.csrf.key} value={Keystone.csrf.value} />
 							{this.renderNameField()}
 							{this.renderKeyOrId()}
 							{this.renderFormElements()}
@@ -371,5 +378,21 @@ var EditForm = React.createClass({
 		);
 	},
 });
+
+const styles = {
+	footerbar: {
+		backgroundColor: fade(theme.color.body, 93),
+		boxShadow: '0 -2px 0 rgba(0, 0, 0, 0.1)',
+		paddingBottom: 20,
+		paddingTop: 20,
+		zIndex: 99,
+	},
+	footerbarInner: {
+		height: theme.component.height, // FIXME aphrodite bug
+	},
+	deleteButton: {
+		float: 'right',
+	},
+};
 
 module.exports = EditForm;

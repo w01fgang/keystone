@@ -9,7 +9,7 @@ module.exports = function DateType(config) {
 			todayButton: '.Button--default',
 		},
 		commands: [{
-			verifyUI: function() {
+			assertUI: function() {
 				this
 					.expect.element('@label').to.be.visible;
 				this
@@ -33,7 +33,7 @@ module.exports = function DateType(config) {
 					.getValue('@value', function (result) {
 						this.api.assert.equal(result.state, "success");
 						this.api.assert.equal(result.value, input.value);
-					});
+					}.bind(this));
 				return this;
 			},
 		}],

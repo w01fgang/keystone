@@ -8,8 +8,8 @@ module.exports = function TextareaType(config) {
 			value: 'textarea[name="' + config.fieldName + '"]',
 		},
 		commands: [{
-			verifyUI: function() {
-        this
+			assertUI: function() {
+				this
 					.expect.element('@label').to.be.visible;
 				this
 					.expect.element('@label').text.to.equal(utils.titlecase(config.fieldName));
@@ -18,19 +18,19 @@ module.exports = function TextareaType(config) {
 				return this;
 			},
 			fillInput: function(input) {
-        this
+				this
 					.clearValue('@value')
 					.setValue('@value', input.value);
 				return this;
 			},
 			assertInput: function(input) {
-        this
+				this
 					.waitForElementVisible('@value');
 				this
 					.getValue('@value', function (result) {
 						this.api.assert.equal(result.state, "success");
 						this.api.assert.equal(result.value, input.value);
-					});
+					}.bind(this));
 				return this;
 			},
 		}],

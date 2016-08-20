@@ -45,6 +45,7 @@ function embedly (list, path, options) {
 
 	embedly.super_.call(this, list, path, options);
 }
+embedly.properName = 'Embedly';
 util.inherits(embedly, FieldType);
 
 /**
@@ -52,10 +53,9 @@ util.inherits(embedly, FieldType);
  *
  * @api public
  */
-embedly.prototype.addToSchema = function () {
+embedly.prototype.addToSchema = function (schema) {
 
 	var field = this;
-	var schema = this.list.schema;
 
 	this.paths = {
 		exists: this._path.append('.exists'),

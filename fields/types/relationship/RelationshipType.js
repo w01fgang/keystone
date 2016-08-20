@@ -16,10 +16,11 @@ function relationship (list, path, options) {
 	this.createInline = (options.createInline) ? true : false;
 	this._defaultSize = 'full';
 	this._nativeType = keystone.mongoose.Schema.Types.ObjectId;
-	this._underscoreMethods = ['format'];
+	this._underscoreMethods = ['format', 'getExpandedData'];
 	this._properties = ['isValid', 'many', 'filters', 'createInline'];
 	relationship.super_.call(this, list, path, options);
 }
+relationship.properName = 'Relationship';
 util.inherits(relationship, FieldType);
 
 /**
@@ -66,9 +67,8 @@ relationship.prototype.getExpandedData = function (item) {
 /**
  * Registers the field on the List's Mongoose Schema.
  */
-relationship.prototype.addToSchema = function () {
+relationship.prototype.addToSchema = function (schema) {
 	var field = this;
-	var schema = this.list.schema;
 	var def = {
 		type: this._nativeType,
 		ref: this.options.ref,
@@ -83,18 +83,6 @@ relationship.prototype.addToSchema = function () {
 	schema.virtual(this.paths.refList).get(function () {
 		return keystone.list(field.options.ref);
 	});
-	if (this.many) {
-		this.underscoreMethod('contains', function (find) {
-			var value = this.populated(field.path) || this.get(field.path);
-			if (typeof find === 'object') {
-				find = find.id;
-			}
-			var result = _.some(value, function (value) {
-				return (value + '' === find);
-			});
-			return result;
-		});
-	}
 	this.bindUnderscoreMethods();
 };
 
@@ -257,28 +245,6 @@ definePrototypeGetters(relationship, {
 		return (this.filters && _.keys(this.filters).length);
 	},
 });
-
-/**
- * Adds relationship filters to a query
- */
-// TODO: Deprecate this? Not sure it's used anywhere - JW
-relationship.prototype.addFilters = function (query, item) {
-	_.forEach(this.filters, function (filters, path) {
-		if (!utils.isObject(filters)) {
-			filters = { equals: filters };
-		}
-		query.where(path);
-		_.forEach(filters, function (value, method) {
-			if (typeof value === 'string' && value.substr(0, 1) === ':') {
-				if (!item) {
-					return;
-				}
-				value = item.get(value.substr(1));
-			}
-			query[method](value);
-		});
-	});
-};
 
 /* Export Field Type */
 module.exports = relationship;

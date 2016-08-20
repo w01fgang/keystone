@@ -4,9 +4,10 @@
  */
 
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { findDOMNode } from 'react-dom';
+import assign from 'object-assign';
 import AlertMessages from './AlertMessages';
-import Fields from '../../utils/fields';
+import { Fields } from 'FieldTypes';
 import InvalidFieldType from './InvalidFieldType';
 import { Button, Form, Modal } from 'elemental';
 
@@ -18,24 +19,20 @@ const CreateForm = React.createClass({
 		list: React.PropTypes.object,
 		onCancel: React.PropTypes.func,
 		onCreate: React.PropTypes.func,
-		values: React.PropTypes.object,
 	},
 	getDefaultProps () {
 		return {
 			err: null,
-			values: {},
 			isOpen: false,
 		};
 	},
 	getInitialState () {
-		var values = Object.assign({}, this.props.values);
-
 		// Set the field values to their default values when first rendering the
 		// form. (If they have a default value, that is)
+		var values = {};
 		Object.keys(this.props.list.fields).forEach(key => {
 			var field = this.props.list.fields[key];
-
-			if (!values[field.path]) {
+			if (field.defaultValue) {
 				values[field.path] = field.defaultValue;
 			}
 		});
@@ -59,12 +56,12 @@ const CreateForm = React.createClass({
 	// Focus the first input field
 	focusTarget () {
 		if (this.refs.focusTarget) {
-			this.refs.focusTarget.focus();
+			findDOMNode(this.refs.focusTarget).focus();
 		}
 	},
 	// Handle input change events
 	handleChange (event) {
-		var values = Object.assign({}, this.state.values);
+		var values = assign({}, this.state.values);
 		values[event.path] = event.value;
 		this.setState({
 			values: values,
@@ -72,7 +69,7 @@ const CreateForm = React.createClass({
 	},
 	// Set the props of a field
 	getFieldProps (field) {
-		var props = Object.assign({}, field);
+		var props = assign({}, field);
 		props.value = this.state.values[field.path];
 		props.values = this.state.values;
 		props.onChange = this.handleChange;
@@ -83,7 +80,7 @@ const CreateForm = React.createClass({
 	// Create a new item when the form is submitted
 	submitForm (event) {
 		event.preventDefault();
-		const createForm = ReactDOM.findDOMNode(this.refs.createForm);
+		const createForm = event.target;
 		const formData = new FormData(createForm);
 		this.props.list.createItem(formData, (err, data) => {
 			if (data) {
@@ -101,6 +98,11 @@ const CreateForm = React.createClass({
 					});
 				}
 			} else {
+				if (!err) {
+					err = {
+						error: 'connection error',
+					};
+				}
 				// If we get a database error, show the database error message
 				// instead of only saying "Database error"
 				if (err.error === 'database error') {
@@ -158,21 +160,10 @@ const CreateForm = React.createClass({
 
 		return (
 			<Form
-				ref="createForm"
 				type="horizontal"
 				onSubmit={this.submitForm}
 				className="create-form"
 			>
-				{/*
-					TODO Figure out if we still need this hidden inputs now that
-					we use the API for creation
-				*/}
-				<input type="hidden" name="action" value="create" />
-				<input
-					type="hidden"
-					name={Keystone.csrf.key}
-					value={Keystone.csrf.value}
-				/>
 				<Modal.Header
 					text={'Create a new ' + list.singular}
 					onClose={this.props.onCancel}

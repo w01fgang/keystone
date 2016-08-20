@@ -2,9 +2,12 @@
 	This page object describes global admin UI configuration and commands that are or should be
 	most likely available in all pages.
  */
+var keystone = require('../../../..');
+
 module.exports = {
-	url: 'http://localhost:3000/keystone/',
+	url: 'http://' + keystone.get('host') + ':' + keystone.get('port') + '/keystone/',
 	pause: 1000,
+	defaultWaitForTimeout: 60000,
 	elements: {
 		// ADMIN UI APP SCREENS
 		signinScreen: '#signin-view',
@@ -26,64 +29,99 @@ module.exports = {
 		// LIST NAV MENU
 		accessMenu: '.primary-navbar [data-section-label="Access"]',
 		fieldListsMenu: '.primary-navbar [data-section-label="Fields"]',
+		miscListsMenu: '.primary-navbar [data-section-label="Miscs"]',
 		booleanListSubmenu: '.secondary-navbar [data-list-path="booleans"]',
+		cloudinaryimageListSubmenu: '.secondary-navbar [data-list-path="cloudinary-images"]',
+		cloudinaryimagemultipleListSubmenu: '.secondary-navbar [data-list-path="cloudinary-image-multiples"]',
 		codeListSubmenu: '.secondary-navbar [data-list-path="codes"]',
 		colorListSubmenu: '.secondary-navbar [data-list-path="colors"]',
+		datearrayListSubmenu: '.secondary-navbar [data-list-path="date-arrays"]',
 		dateListSubmenu: '.secondary-navbar [data-list-path="dates"]',
 		datetimeListSubmenu: '.secondary-navbar [data-list-path="datetimes"]',
 		emailListSubmenu: '.secondary-navbar [data-list-path="emails"]',
+		fileListSubmenu: '.secondary-navbar [data-list-path="files"]',
+		geopointListSubmenu: '.secondary-navbar [data-list-path="geo-points"]',
 		htmlListSubmenu: '.secondary-navbar [data-list-path="htmls"]',
+		keyListSubmenu: '.secondary-navbar [data-list-path="keys"]',
+		locationListSubmenu: '.secondary-navbar [data-list-path="locations"]',
 		markdownListSubmenu: '.secondary-navbar [data-list-path="markdowns"]',
+		moneyListSubmenu: '.secondary-navbar [data-list-path="money"]',
 		nameListSubmenu: '.secondary-navbar [data-list-path="names"]',
+		numberarrayListSubmenu: '.secondary-navbar [data-list-path="number-arrays"]',
+		numberListSubmenu: '.secondary-navbar [data-list-path="numbers"]',
 		passwordListSubmenu: '.secondary-navbar [data-list-path="passwords"]',
+		relationshipListSubmenu: '.secondary-navbar [data-list-path="relationships"]',
 		selectListSubmenu: '.secondary-navbar [data-list-path="selects"]',
-		textListSubmenu: '.secondary-navbar [data-list-path="texts"]',
 		textareaListSubmenu: '.secondary-navbar [data-list-path="textareas"]',
+		textarrayListSubmenu: '.secondary-navbar [data-list-path="text-arrays"]',
+		textListSubmenu: '.secondary-navbar [data-list-path="texts"]',
 		urlListSubmenu: '.secondary-navbar [data-list-path="urls"]',
+
+		// FIX ME NAV MENU
+		datefieldmapListSubmenu: '.secondary-navbar [data-list-path="date-field-maps"]',
+		dependsonListSubmenu: '.secondary-navbar [data-list-path="depends-ons"]',
+		hiddenrelationshipListSubmenu: '.secondary-navbar [data-list-path="hidden-relationships"]',
+		inlinerelationshipListSubmenu: '.secondary-navbar [data-list-path="inline-relationships"]',
+		manyrelationshipListSubmenu: '.secondary-navbar [data-list-path="many-relationships"]',
+		nodefaultcolumnListSubmenu: '.secondary-navbar [data-list-path="no-default-columns"]',
+		sourcerelationshipListSubmenu: '.secondary-navbar [data-list-path="source-relationships"]',
+		targetrelationshipListSubmenu: '.secondary-navbar [data-list-path="target-relationships"]',
 	},
 	commands: [{
+		gotoHomeScreen: function() {
+			return this
+				.navigate();		// navigate to the configure Url
+		},
+		openMiscList: function(list) {
+			var list = list.toLowerCase() + 'List';
+			var listSubmenu = '@' + list + 'Submenu';
+			return this.click('@miscListsMenu')
+				.waitForListScreen()
+				.click(listSubmenu)
+				.waitForListScreen();
+		},
 		openFieldList: function(field) {
 				var list = field.toLowerCase() + 'List';
 				var listSubmenu = '@' + list + 'Submenu';
 				return this.click('@fieldListsMenu')
-					.waitForElementVisible('@listScreen')
+					.waitForListScreen()
 					.click(listSubmenu)
-					.waitForElementVisible('@listScreen');
+					.waitForListScreen();
 		},
 		signout: function() {
 			this.api.pause(500);
 			return this
 				.waitForElementVisible('@logoutIcon')
 				.click('@logoutIconLink')
-				.waitForElementVisible('@signinScreen');
+				.waitForSigninScreen();
 		},
-		waitForSigninScreen: function() {
+		waitForSigninScreen: function(timeout) {
 			return this
-				.waitForElementVisible('@signinScreen');
+				.waitForElementVisible('@signinScreen', timeout || this.defaultWaitForTimeout);
 		},
-		waitForHomeScreen: function() {
+		waitForHomeScreen: function(timeout) {
 			return this
-				.waitForElementVisible('@homeScreen');
+				.waitForElementVisible('@homeScreen', timeout || this.defaultWaitForTimeout);
 		},
-		waitForInitialFormScreen: function() {
+		waitForInitialFormScreen: function(timeout) {
 			return this
-				.waitForElementVisible('@initialFormScreen');
+				.waitForElementVisible('@initialFormScreen', timeout || this.defaultWaitForTimeout);
 		},
-		waitForDeleteConfirmationScreen: function() {
+		waitForDeleteConfirmationScreen: function(timeout) {
 			return this
-				.waitForElementVisible('@deleteConfirmationScreen');
+				.waitForElementVisible('@deleteConfirmationScreen', timeout || this.defaultWaitForTimeout);
 		},
-		waitForResetConfirmationScreen: function() {
+		waitForResetConfirmationScreen: function(timeout) {
 			return this
-				.waitForElementVisible('@resetConfirmationScreen');
+				.waitForElementVisible('@resetConfirmationScreen', timeout || this.defaultWaitForTimeout);
 		},
-		waitForListScreen: function() {
+		waitForListScreen: function(timeout) {
 			return this
-				.waitForElementVisible('@listScreen');
+				.waitForElementVisible('@listScreen', timeout || this.defaultWaitForTimeout);
 		},
-		waitForItemScreen: function() {
+		waitForItemScreen: function(timeout) {
 			return this
-				.waitForElementVisible('@itemScreen');
+				.waitForElementVisible('@itemScreen', timeout || this.defaultWaitForTimeout);
 		},
 	}],
 };

@@ -16,13 +16,20 @@ module.exports = function PasswordType(config) {
 					.waitForElementVisible('@value');
 				return this;
 			},
-			verifyUI: function() {
+			assertUI: function(args) {
 				this
 					.expect.element('@label').to.be.visible;
 				this
 					.expect.element('@label').text.to.equal(utils.titlecase(config.fieldName));
-				this
-					.expect.element('@value').to.be.visible;
+				if (args.editForm){
+					// In the edit form, a "Set Password" button is shown.
+					this
+						.expect.element('@setPasswordButton').to.be.visible;
+				} else {
+					// In the initial form, the input field is shown immediately.
+					this
+						.expect.element('@value').to.be.visible;
+				}
 				return this;
 			},
 			fillInput: function(input) {
@@ -40,7 +47,7 @@ module.exports = function PasswordType(config) {
 					.getValue('@value', function (result) {
 						this.api.assert.equal(result.state, "success");
 						this.api.assert.equal(result.value, input.value);
-					});
+					}.bind(this));
 				return this;
 			},
 		}],
