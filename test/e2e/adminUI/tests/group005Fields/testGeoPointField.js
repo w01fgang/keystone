@@ -1,45 +1,46 @@
 var fieldTests = require('./commonFieldTestUtils.js');
+var GeoPointModelTestConfig = require('../../../modelTestConfig/GeoPointModelTestConfig');
 
 module.exports = {
 	before: fieldTests.before,
 	after: fieldTests.after,
 	'GeoPoint field should show correctly in the initial modal': function (browser) {
-		browser.app.openFieldList('GeoPoint');
-		browser.listScreen.createFirstItem();
-		browser.app.waitForInitialFormScreen();
+		browser.adminUIApp.openList({section: 'fields', list: 'GeoPoint'});
+		browser.adminUIListScreen.clickCreateItemButton();
+		browser.adminUIApp.waitForInitialFormScreen();
 
-		browser.initialFormScreen.assertUI({
-			listName: 'GeoPoint',
-			fields: ['name', 'fieldA']
+		browser.adminUIInitialFormScreen.assertFieldUIVisible({
+			modelTestConfig: GeoPointModelTestConfig,
+			fields: [{name: 'name'}, {name: 'fieldA'}]
 		});
 	},
 	'restoring test state': function(browser) {
-		browser.initialFormScreen.cancel();
-		browser.app.waitForListScreen();
+		browser.adminUIInitialFormScreen.cancel();
+		browser.adminUIApp.waitForListScreen();
 	},
 	'GeoPoint field can be filled via the initial modal': function(browser) {
-		browser.app.openFieldList('GeoPoint');
-		browser.listScreen.createFirstItem();
-		browser.app.waitForInitialFormScreen();
-		browser.initialFormScreen.fillInputs({
-			listName: 'GeoPoint',
+		browser.adminUIApp.openList({section: 'fields', list: 'GeoPoint'});
+		browser.adminUIListScreen.clickCreateItemButton();
+		browser.adminUIApp.waitForInitialFormScreen();
+		browser.adminUIInitialFormScreen.fillFieldInputs({
+			modelTestConfig: GeoPointModelTestConfig,
 			fields: {
 				'name': {value: 'GeoPoint Field Test 1'},
 				'fieldA': {lat: '123', lng: '456'},
 			}
 		});
-		browser.initialFormScreen.assertInputs({
-			listName: 'GeoPoint',
+		browser.adminUIInitialFormScreen.assertFieldInputs({
+			modelTestConfig: GeoPointModelTestConfig,
 			fields: {
 				'name': {value: 'GeoPoint Field Test 1'},
 				'fieldA': {lat: '123', lng: '456'},
 			}
 		});
-		browser.initialFormScreen.save();
-		browser.app.waitForItemScreen();
+		browser.adminUIInitialFormScreen.save();
+		browser.adminUIApp.waitForItemScreen();
 
-		browser.itemScreen.assertInputs({
-			listName: 'GeoPoint',
+		browser.adminUIItemScreen.assertFieldInputs({
+			modelTestConfig: GeoPointModelTestConfig,
 			fields: {
 				'name': {value: 'GeoPoint Field Test 1'},
 				'fieldA': {lat: '123', lng: '456'},
@@ -47,23 +48,23 @@ module.exports = {
 		})
 	},
 	'GeoPoint field should show correctly in the edit form': function(browser) {
-		browser.itemScreen.assertUI({
-			listName: 'GeoPoint',
-			fields: ['fieldA', 'fieldB']
+		browser.adminUIItemScreen.assertFieldUIVisible({
+			modelTestConfig: GeoPointModelTestConfig,
+			fields: [{name: 'fieldA'}, {name: 'fieldB'}]
 		});
 	},
 	'GeoPoint field can be filled via the edit form': function(browser) {
-		browser.itemScreen.fillInputs({
-			listName: 'GeoPoint',
+		browser.adminUIItemScreen.fillFieldInputs({
+			modelTestConfig: GeoPointModelTestConfig,
 			fields: {
 				'fieldB': {lat: '789', lng: '246'}
 			}
 		});
-		browser.itemScreen.save();
-		browser.app.waitForItemScreen();
-		browser.itemScreen.assertFlashMessage('Your changes have been saved successfully');
-		browser.itemScreen.assertInputs({
-			listName: 'GeoPoint',
+		browser.adminUIItemScreen.save();
+		browser.adminUIApp.waitForItemScreen();
+		browser.adminUIItemScreen.assertFlashMessage('Your changes have been saved successfully');
+		browser.adminUIItemScreen.assertFieldInputs({
+			modelTestConfig: GeoPointModelTestConfig,
 			fields: {
 				'name': {value: 'GeoPoint Field Test 1'},
 				'fieldA': {lat: '123', lng: '456'},

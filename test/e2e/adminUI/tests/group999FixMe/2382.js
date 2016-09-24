@@ -1,82 +1,82 @@
 module.exports = {
 	before: function (browser) {
-		browser.app = browser.page.app();
-		browser.signinScreen = browser.page.signin();
-		browser.listScreen = browser.page.list();
-		browser.itemScreen = browser.page.item();
-		browser.initialFormScreen = browser.page.initialForm();
-		browser.deleteConfirmationScreen = browser.page.deleteConfirmation();
+		browser.adminUIApp = browser.page.adminUIApp();
+		browser.adminUISignin = browser.page.adminUISignin();
+		browser.adminUIListScreen = browser.page.adminUIListScreen();
+		browser.adminUIItemScreen = browser.page.adminUIItemScreen();
+		browser.adminUIInitialFormScreen = browser.page.adminUIInitialForm();
+		browser.adminUIDeleteConfirmation = browser.page.adminUIDeleteConfirmation();
 
-		browser.app.gotoHomeScreen();
-		browser.app.waitForSigninScreen();
+		browser.adminUIApp.gotoHomeScreen();
+		browser.adminUIApp.waitForSigninScreen();
 
-		browser.signinScreen.signin();
-		browser.app.waitForHomeScreen();
+		browser.adminUISignin.signin();
+		browser.adminUIApp.waitForHomeScreen();
 	},
 	after: function (browser) {
-		browser.app.signout();
+		browser.adminUIApp.signout();
 		browser.end();
 	},
 	'Demonstrate issue 2382': function(browser) {
 
 		// Add new text item
 
-		browser.app.openFieldList('Text');
-		browser.listScreen.createFirstItem();
-		browser.app.waitForInitialFormScreen();
+		browser.adminUIApp.openList({section: 'fields', list: 'Text'});
+		browser.adminUIListScreen.createFirstItem();
+		browser.adminUIApp.waitForInitialFormScreen();
 
-		browser.initialFormScreen.fillInputs({
+		browser.adminUIInitialFormScreen.fillFieldInputs({
 			listName: 'Text',
 			fields: {
 				'name': {value: 'Test 1'},
 			}
 		});
-		browser.initialFormScreen.save();
-		browser.app.waitForItemScreen();
+		browser.adminUIInitialFormScreen.save();
+		browser.adminUIApp.waitForItemScreen();
 
-		browser.app.click('@homeIconLink');
-		browser.app.waitForHomeScreen();
+		browser.adminUIApp.click('@homeIconLink');
+		browser.adminUIApp.waitForHomeScreen();
 
 		// Add new relationship with the above text item
 
-		browser.app.openMiscList('ManyRelationship');
-		browser.listScreen.createFirstItem();
-		browser.app.waitForInitialFormScreen();
+		browser.adminUIApp.openList({section: 'Miscs', list: 'ManyRelationship'});
+		browser.adminUIListScreen.createFirstItem();
+		browser.adminUIApp.waitForInitialFormScreen();
 
-		browser.initialFormScreen.fillInputs({
+		browser.adminUIInitialFormScreen.fillFieldInputs({
 			listName: 'ManyRelationship',
 			fields: {
 				'name': {value: 'Test 1'},
 				'fieldA': {value: 'Test 1'}
 			}
 		});
-		browser.initialFormScreen.save();
-		browser.app.waitForItemScreen();
+		browser.adminUIInitialFormScreen.save();
+		browser.adminUIApp.waitForItemScreen();
 
-		browser.app.click('@homeIconLink');
-		browser.app.waitForHomeScreen();
+		browser.adminUIApp.click('@homeIconLink');
+		browser.adminUIApp.waitForHomeScreen();
 
 		// Now delete the text item
 
-		browser.app.openFieldList('Text');
-		browser.app.waitForListScreen();
+		browser.adminUIApp.openList({section: 'fields', list: 'Text'});
+		browser.adminUIApp.waitForListScreen();
 
 
-		browser.listScreen.navigateToFirstItem();
-		browser.app.waitForItemScreen();
-		browser.itemScreen.delete();
+		browser.adminUIListScreen.navigateToFirstItem();
+		browser.adminUIApp.waitForItemScreen();
+		browser.adminUIItemScreen.delete();
 
-		browser.deleteConfirmationScreen
+		browser.adminUIDeleteConfirmation
 			.waitForElementVisible('@deleteButton');
 
-		browser.deleteConfirmationScreen
+		browser.adminUIDeleteConfirmation
 			.click('@deleteButton');
 
-		browser.app.click('@homeIconLink');
-		browser.app.waitForHomeScreen();
+		browser.adminUIApp.click('@homeIconLink');
+		browser.adminUIApp.waitForHomeScreen();
 
-		browser.app.openMiscList('ManyRelationship');
-		browser.listScreen.navigateToFirstItem();
+		browser.adminUIApp.openList({section: 'Miscs', list: 'ManyRelationship'});
+		browser.adminUIListScreen.navigateToFirstItem();
 
 		// TODO since we've not established the intended behaviour yet, just pause.
 		// Currently, a blank box appears.

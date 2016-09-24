@@ -30,7 +30,6 @@ function password (list, path, options) {
 	this._fixedSize = 'full';
 	// You can't sort on password fields
 	options.nosort = true;
-	options.nofilter = true; // TODO: remove this when 0.4 is merged
 	this.workFactor = options.workFactor || 10;
 	password.super_.call(this, list, path, options);
 	for (var key in this.options.complexity) {
@@ -42,6 +41,9 @@ function password (list, path, options) {
 				throw new Error('FieldType.Password: options.complexity - Value must be boolean.');
 			}
 		}
+	}
+	if (this.options.max <= this.options.min) {
+		throw new Error('FieldType.Password: options - min must be set at a lower value than max.');
 	}
 }
 password.properName = 'Password';
@@ -59,8 +61,8 @@ password.prototype.addToSchema = function (schema) {
 	var needs_hashing = '__' + field.path + '_needs_hashing';
 
 	this.paths = {
-		confirm: this.options.confirmPath || this._path.append('_confirm'),
-		hash: this.options.hashPath || this._path.append('_hash'),
+		confirm: this.options.confirmPath || this.path + '_confirm',
+		hash: this.options.hashPath || this.path + '_hash',
 	};
 
 	schema.path(this.path, _.defaults({
@@ -150,6 +152,7 @@ password.prototype.validateInput = function (data, callback) {
 	var detail = '';
 	var result = true;
 	var min = this.options.min;
+	var max = this.options.max || 72;
 	var complexity = this.options.complexity;
 	var confirmValue = this.getValueFromData(data, '_confirm');
 	var passwordValue = this.getValueFromData(data);
@@ -161,6 +164,11 @@ password.prototype.validateInput = function (data, callback) {
 	if (min && typeof passwordValue === 'string' && passwordValue.length < min) {
 		detail += 'password must be longer than ' + min + ' characters\n';
 	}
+
+	if (max && typeof passwordValue === 'string' && passwordValue.length > max) {
+		detail += 'password must not be longer than ' + max + ' characters\n';
+	}
+
 	for (var prop in complexity) {
 		if (complexity[prop] && typeof passwordValue === 'string') {
 			var complexityCheck = (regexChunk[prop]).test(passwordValue);

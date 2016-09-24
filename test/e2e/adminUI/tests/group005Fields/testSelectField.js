@@ -1,46 +1,52 @@
 var fieldTests = require('./commonFieldTestUtils.js');
+var SelectModelTestConfig = require('../../../modelTestConfig/SelectModelTestConfig');
 
 module.exports = {
 	before: fieldTests.before,
 	after: fieldTests.after,
 	'Select field should show correctly in the initial modal': function (browser) {
-		browser.app.openFieldList('Select');
-		browser.listScreen.createFirstItem();
-		browser.app.waitForInitialFormScreen();
+		browser.adminUIApp.openList({section: 'fields', list: 'Select'});
+		browser.adminUIListScreen.clickCreateItemButton();
+		browser.adminUIApp.waitForInitialFormScreen();
 
-		browser.initialFormScreen.assertUI({
-			listName: 'Select',
-			fields: ['name', 'fieldA'],
-			args: {'editForm': false}, // To check for @value instead of @button
+		browser.adminUIInitialFormScreen.assertFieldUIVisible({
+			modelTestConfig: SelectModelTestConfig,
+			fields: [
+				{name: 'name'},
+				{
+					name: 'fieldA',
+					options: {'editForm': false}
+				}
+			],
 		});
 	},
 	'restoring test state': function(browser) {
-		browser.initialFormScreen.cancel();
-		browser.app.waitForListScreen();
+		browser.adminUIInitialFormScreen.cancel();
+		browser.adminUIApp.waitForListScreen();
 	},
 	'Select field can be filled via the initial modal': function(browser) {
-		browser.app.openFieldList('Select');
-		browser.listScreen.createFirstItem();
-		browser.app.waitForInitialFormScreen();
-		browser.initialFormScreen.fillInputs({
-			listName: 'Select',
+		browser.adminUIApp.openList({section: 'fields', list: 'Select'});
+		browser.adminUIListScreen.clickCreateItemButton();
+		browser.adminUIApp.waitForInitialFormScreen();
+		browser.adminUIInitialFormScreen.fillFieldInputs({
+			modelTestConfig: SelectModelTestConfig,
 			fields: {
 				'name': {value: 'Select Field Test 1'},
 				'fieldA': {value: 'One'},
 			}
 		});
-		browser.initialFormScreen.assertInputs({
-			listName: 'Select',
+		browser.adminUIInitialFormScreen.assertFieldInputs({
+			modelTestConfig: SelectModelTestConfig,
 			fields: {
 				'name': {value: 'Select Field Test 1'},
 				'fieldA': {value: 'One'},
 			}
 		});
-		browser.initialFormScreen.save();
-		browser.app.waitForItemScreen();
+		browser.adminUIInitialFormScreen.save();
+		browser.adminUIApp.waitForItemScreen();
 
-		browser.itemScreen.assertInputs({
-			listName: 'Select',
+		browser.adminUIItemScreen.assertFieldInputs({
+			modelTestConfig: SelectModelTestConfig,
 			fields: {
 				'name': {value: 'Select Field Test 1'},
 				'fieldA': {value: 'One'},
@@ -48,24 +54,32 @@ module.exports = {
 		})
 	},
 	'Select field should show correctly in the edit form': function(browser) {
-		browser.itemScreen.assertUI({
-			listName: 'Select',
-			fields: ['fieldA', 'fieldB'],
-			args: {'editForm': true},
+		browser.adminUIItemScreen.assertFieldUIVisible({
+			modelTestConfig: SelectModelTestConfig,
+			fields: [
+				{
+					name: 'fieldA',
+					options: {'editForm': true}
+				},
+				{
+					name: 'fieldB',
+					options: {'editForm': true}
+				}
+			],
 		});
 	},
 	'Select field can be filled via the edit form': function(browser) {
-		browser.itemScreen.fillInputs({
-			listName: 'Select',
+		browser.adminUIItemScreen.fillFieldInputs({
+			modelTestConfig: SelectModelTestConfig,
 			fields: {
 				'fieldB': {value: 'Two'}
 			}
 		});
-		browser.itemScreen.save();
-		browser.app.waitForItemScreen();
-		browser.itemScreen.assertFlashMessage('Your changes have been saved successfully');
-		browser.itemScreen.assertInputs({
-			listName: 'Select',
+		browser.adminUIItemScreen.save();
+		browser.adminUIApp.waitForItemScreen();
+		browser.adminUIItemScreen.assertFlashMessage('Your changes have been saved successfully');
+		browser.adminUIItemScreen.assertFieldInputs({
+			modelTestConfig: SelectModelTestConfig,
 			fields: {
 				'name': {value: 'Select Field Test 1'},
 				'fieldA': {value: 'One'},

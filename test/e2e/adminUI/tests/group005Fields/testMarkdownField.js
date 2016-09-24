@@ -1,53 +1,59 @@
 var fieldTests = require('./commonFieldTestUtils.js');
+var MarkdownModelTestConfig = require('../../../modelTestConfig/MarkdownModelTestConfig');
 
 module.exports = {
 	before: fieldTests.before,
 	after: fieldTests.after,
 	'Markdown field should show correctly in the initial modal': function (browser) {
-		browser.app.openFieldList('Markdown');
-		browser.listScreen.createFirstItem();
-		browser.app.waitForInitialFormScreen();
+		browser.adminUIApp.openList({section: 'fields', list: 'Markdown'});
+		browser.adminUIListScreen.clickCreateItemButton();
+		browser.adminUIApp.waitForInitialFormScreen();
 
-		browser.initialFormScreen.assertUI({
-			listName: 'Markdown',
-			fields: ['name', 'fieldA']
+		browser.adminUIInitialFormScreen.assertFieldUIVisible({
+			modelTestConfig: MarkdownModelTestConfig,
+			fields: [{name: 'name'}, {name: 'fieldA'}]
 		});
 	},
 	'restoring test state': function(browser) {
-		browser.initialFormScreen.cancel();
-		browser.app.waitForListScreen();
+		browser.adminUIInitialFormScreen.cancel();
+		browser.adminUIApp.waitForListScreen();
 	},
 	'Markdown field can be filled via the initial modal': function(browser) {
-		browser.app.openFieldList('Markdown');
-		browser.listScreen.createFirstItem();
-		browser.app.waitForInitialFormScreen();
-		browser.initialFormScreen.fillInputs({
-			listName: 'Markdown',
+		browser.adminUIApp.openList({section: 'fields', list: 'Markdown'});
+		browser.adminUIListScreen.clickCreateItemButton();
+		browser.adminUIApp.waitForInitialFormScreen();
+		browser.adminUIInitialFormScreen.fillFieldInputs({
+			modelTestConfig: MarkdownModelTestConfig,
 			fields: {
 				'name': {value: 'Markdown Field Test 1'},
 				'fieldA': {md: 'Some __test__ markdown for **field A**'},
 			}
 		});
-		browser.initialFormScreen.assertInputs({
-			listName: 'Markdown',
+		browser.adminUIInitialFormScreen.assertFieldInputs({
+			modelTestConfig: MarkdownModelTestConfig,
 			fields: {
 				'name': {value: 'Markdown Field Test 1'},
 				'fieldA': {md: 'Some __test__ markdown for **field A**'},
 			}
 		});
-		browser.initialFormScreen.section.form.section.markdownList.section.fieldA.togglePreview();
-		browser.initialFormScreen.assertInputs({
-			listName: 'Markdown',
+		browser.adminUIInitialFormScreen.clickFieldUI({
+			modelTestConfig: MarkdownModelTestConfig,
+			fields: {
+				'fieldA': {'click': 'previewToggle'},
+			}
+		});
+		browser.adminUIInitialFormScreen.assertFieldInputs({
+			modelTestConfig: MarkdownModelTestConfig,
 			fields: {
 				'name': {value: 'Markdown Field Test 1'},
 				'fieldA': {html: '<p>Some <strong>test</strong> markdown for <strong>field A</strong></p>\n'},
 			}
 		});
-		browser.initialFormScreen.save();
-		browser.app.waitForItemScreen();
+		browser.adminUIInitialFormScreen.save();
+		browser.adminUIApp.waitForItemScreen();
 
-		browser.itemScreen.assertInputs({
-			listName: 'Markdown',
+		browser.adminUIItemScreen.assertFieldInputs({
+			modelTestConfig: MarkdownModelTestConfig,
 			fields: {
 				'name': {value: 'Markdown Field Test 1'},
 				'fieldA': {md: 'Some __test__ markdown for **field A**'},
@@ -55,23 +61,23 @@ module.exports = {
 		})
 	},
 	'Markdown field should show correctly in the edit form': function(browser) {
-		browser.itemScreen.assertUI({
-			listName: 'Markdown',
-			fields: ['fieldA', 'fieldB']
+		browser.adminUIItemScreen.assertFieldUIVisible({
+			modelTestConfig: MarkdownModelTestConfig,
+			fields: [{name: 'fieldA'}, {name: 'fieldB'}]
 		});
 	},
 	'Markdown field can be filled via the edit form': function(browser) {
-		browser.itemScreen.fillInputs({
-			listName: 'Markdown',
+		browser.adminUIItemScreen.fillFieldInputs({
+			modelTestConfig: MarkdownModelTestConfig,
 			fields: {
 				'fieldB': {md: 'Some __test__ markdown for **field B**'}
 			}
 		});
-		browser.itemScreen.save();
-		browser.app.waitForItemScreen();
-		browser.itemScreen.assertFlashMessage('Your changes have been saved successfully');
-		browser.itemScreen.assertInputs({
-			listName: 'Markdown',
+		browser.adminUIItemScreen.save();
+		browser.adminUIApp.waitForItemScreen();
+		browser.adminUIItemScreen.assertFlashMessage('Your changes have been saved successfully');
+		browser.adminUIItemScreen.assertFieldInputs({
+			modelTestConfig: MarkdownModelTestConfig,
 			fields: {
 				'name': {value: 'Markdown Field Test 1'},
 				'fieldA': {md: 'Some __test__ markdown for **field A**'},
@@ -80,10 +86,10 @@ module.exports = {
 		});
 		/* TODO Work out why this was breaking travis, and re-implement
 		See https://travis-ci.org/keystonejs/keystone/builds/130040822#L2215
-		browser.itemScreen.section.form.section.markdownList.section.fieldA.togglePreview();
-		browser.itemScreen.section.form.section.markdownList.section.fieldB.togglePreview();
-		browser.itemScreen.assertInputs({
-			listName: 'Markdown',
+		browser.adminUIItemScreen.section.form.section.markdownList.section.fieldA.togglePreview();
+		browser.adminUIItemScreen.section.form.section.markdownList.section.fieldB.togglePreview();
+		browser.adminUIItemScreen.assertFieldInputs({
+			modelTestConfig: MarkdownModelTestConfig,
 			fields: {
 				'name': {value: 'Markdown Field Test 1'},
 				'fieldA': {html: '<p>Some <strong>test</strong> markdown for <strong>field A</strong></p>\n'},

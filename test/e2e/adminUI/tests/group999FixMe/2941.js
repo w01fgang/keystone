@@ -1,34 +1,34 @@
 module.exports = {
 	before: function (browser) {
-		browser.app = browser.page.app();
-		browser.signinScreen = browser.page.signin();
-		browser.listScreen = browser.page.list();
-		browser.itemScreen = browser.page.item();
-		browser.initialFormScreen = browser.page.initialForm();
+		browser.adminUIApp = browser.page.adminUIApp();
+		browser.adminUISignin = browser.page.adminUISignin();
+		browser.adminUIListScreen = browser.page.adminUIListScreen();
+		browser.adminUIItemScreen = browser.page.adminUIItemScreen();
+		browser.adminUIInitialFormScreen = browser.page.adminUIInitialForm();
 
-		browser.app.gotoHomeScreen();
-		browser.app.waitForSigninScreen();
+		browser.adminUIApp.gotoHomeScreen();
+		browser.adminUIApp.waitForSigninScreen();
 
-		browser.signinScreen.signin();
-		browser.app.waitForHomeScreen();
+		browser.adminUISignin.signin();
+		browser.adminUIApp.waitForHomeScreen();
 	},
 	after: function (browser) {
-		browser.app.signout();
+		browser.adminUIApp.signout();
 		browser.end();
 	},
 	'Demonstrate issue 2941': function(browser) {
 		// Create items
-		browser.app.openMiscList('HiddenRelationship');
-		browser.listScreen.createFirstItem();
-		browser.app.waitForInitialFormScreen();
+		browser.adminUIApp.openList({section: 'Miscs', list: 'HiddenRelationship'});
+		browser.adminUIListScreen.createFirstItem();
+		browser.adminUIApp.waitForInitialFormScreen();
 
 
 		// Issue demonstration - the field should not be visible, but it is.
 
-		browser.initialFormScreen.section.form.section.hiddenrelationshipList.section.fieldA
+		browser.adminUIInitialFormScreen.section.form.section.hiddenrelationshipList.section.fieldA
 			.expect.element('@label').to.not.be.visible;
 
-		browser.initialFormScreen.cancel();
+		browser.adminUIInitialFormScreen.cancel();
 
 	}
 };

@@ -1,13 +1,25 @@
 var _ = require('lodash');
 var assign = require('object-assign');
+var ensureCallback = require('keystone-storage-namefunctions/ensureCallback');
 var FieldType = require('../Type');
 var keystone = require('../../../');
+var nameFunctions = require('keystone-storage-namefunctions');
+var prototypeMethods = require('keystone-storage-namefunctions/prototypeMethods');
+var sanitize = require('sanitize-filename');
 var util = require('util');
 var utils = require('keystone-utils');
 
 /*
 var CLOUDINARY_FIELDS = ['public_id', 'version', 'signature', 'format', 'resource_type', 'url', 'width', 'height', 'secure_url'];
 */
+
+var DEFAULT_OPTIONS = {
+	// This makes Cloudinary assign a unique public_id and is the same as
+	//   the legacy implementation
+	generateFilename: () => undefined,
+	whenExists: 'overwrite',
+	retryAttempts: 3, // For whenExists: 'retry'.
+};
 
 function getEmptyValue () {
 	return {
@@ -31,10 +43,15 @@ function getEmptyValue () {
 function cloudinaryimage (list, path, options) {
 	this._underscoreMethods = ['format'];
 	this._fixedSize = 'full';
-	this._properties = ['select', 'selectPrefix', 'autoCleanup', 'publicID', 'folder', 'filenameAsPublicID'];
+	this._properties = ['select', 'selectPrefix', 'autoCleanup'];
 
-	// TODO: implement filtering, usage disabled for now
-	options.nofilter = true;
+	if (options.filenameAsPublicID) {
+		// Produces the same result as the legacy filenameAsPublicID option
+		options.generateFilename = nameFunctions.originalFilename;
+		options.whenExists = 'overwrite';
+	}
+	options = assign({}, DEFAULT_OPTIONS, options);
+	options.generateFilename = ensureCallback(options.generateFilename);
 
 	cloudinaryimage.super_.call(this, list, path, options);
 	// validate cloudinary config
@@ -78,20 +95,20 @@ cloudinaryimage.prototype.addToSchema = function (schema) {
 
 	var paths = this.paths = {
 		// cloudinary fields
-		public_id: this._path.append('.public_id'),
-		version: this._path.append('.version'),
-		signature: this._path.append('.signature'),
-		format: this._path.append('.format'),
-		resource_type: this._path.append('.resource_type'),
-		url: this._path.append('.url'),
-		width: this._path.append('.width'),
-		height: this._path.append('.height'),
-		secure_url: this._path.append('.secure_url'),
+		public_id: this.path + '.public_id',
+		version: this.path + '.version',
+		signature: this.path + '.signature',
+		format: this.path + '.format',
+		resource_type: this.path + '.resource_type',
+		url: this.path + '.url',
+		width: this.path + '.width',
+		height: this.path + '.height',
+		secure_url: this.path + '.secure_url',
 		// virtuals
-		exists: this._path.append('.exists'),
-		folder: this._path.append('.folder'),
+		exists: this.path + '.exists',
+		folder: this.path + '.folder',
 		// form paths
-		select: this._path.append('_select'),
+		select: this.path + '_select',
 	};
 
 	var schemaPaths = this._path.addTo({}, {
@@ -253,6 +270,14 @@ cloudinaryimage.prototype.format = function (item) {
 };
 
 /**
+ * Gets the field's data from an Item, as used by the React components
+ */
+cloudinaryimage.prototype.getData = function (item) {
+	var value = item.get(this.path);
+	return typeof value === 'object' ? value : {};
+};
+
+/**
  * Detects whether the field has been modified
  */
 cloudinaryimage.prototype.isModified = function (item) {
@@ -285,9 +310,12 @@ cloudinaryimage.prototype.validateInput = function (data, callback) {
  * Validates that input has been provided
  */
 cloudinaryimage.prototype.validateRequiredInput = function (item, data, callback) {
-	var value = this.getValueFromData(data);
-	// TODO: This should be much more robust
-	var result = (value || item.get(this.path).public_id) ? true : false;
+	// TODO: We need to also get the `files` argument, so we can check for
+	// uploaded files. without it, this will return false negatives so we
+	// can't actually validate required input at the moment.
+	var result = true;
+	// var value = this.getValueFromData(data);
+	// var result = (value || item.get(this.path).public_id) ? true : false;
 	utils.defer(callback, result);
 };
 
@@ -301,43 +329,48 @@ cloudinaryimage.prototype.inputIsValid = function () {
 };
 
 /**
+ * Trim supported file extensions from the public id because cloudinary uses these at
+ * the end of the a url to dynamically convert the image filetype
+ */
+function trimSupportedFileExtensions (publicId) {
+	var supportedExtensions = [
+		'.jpg', '.jpe', '.jpeg', '.jpc', '.jp2', '.j2k', '.wdp', '.jxr',
+		'.hdp', '.png', '.gif', '.webp', '.bmp', '.tif', '.tiff', '.ico',
+		'.pdf', '.ps', '.ept', '.eps', '.eps3', '.psd', '.svg', '.ai',
+		'.djvu', '.flif', '.tga',
+	];
+	for (var i = 0; i < supportedExtensions.length; i++) {
+		var extension = supportedExtensions[i];
+		if (_.endsWith(publicId, extension)) {
+			return publicId.slice(0, -extension.length);
+		}
+	}
+	return publicId;
+}
+
+/**
  * Updates the value for this field in the item from a data object
+ * TODO: It is not possible to remove an existing value and upload a new image
+ * in the same action, this should be supported
  */
 cloudinaryimage.prototype.updateItem = function (item, data, files, callback) {
+	// Process arguments
 	if (typeof files === 'function') {
 		callback = files;
 		files = {};
-	} else if (!files) {
+	}
+	if (!files) {
 		files = {};
 	}
 
 	var cloudinary = require('cloudinary');
 	var field = this;
+
+	// Prepare values
 	var value = this.getValueFromData(data);
+	var uploadedFile;
 
-	// Allow value to be retrieved from the legacy `_upload` path if it is undefined
-	if (value === undefined) {
-		value = this.getValueFromData(data, '_upload');
-	}
-
-	// If the value is still undefined, bail early
-	if (value === undefined) {
-		return utils.defer(callback);
-	}
-
-	// Allow field value reset
-	if (value === '' || value === null || (typeof value === 'object' && !Object.keys(value).length)) {
-		value = getEmptyValue();
-	}
-
-	/*
-		When the value is a string, it is one of:
-		* a reference to an uploaded file in multipart data (provided in files)
-		* base64 data to upload
-		* a remote URL to upload
-		* a direction to delete the current file ("remove")
-	*/
-
+	// Providing the string "remove" removes the file and resets the field
 	if (value === 'remove') {
 		cloudinary.uploader.destroy(item.get(field.paths.public_id), function (result) {
 			if (result.error) {
@@ -350,22 +383,24 @@ cloudinaryimage.prototype.updateItem = function (item, data, files, callback) {
 		return;
 	}
 
-	if (typeof value === 'string') {
-		// detect file upload (field value must be a reference to a field in the
-		// uploaded files object provided by multer)
-		if (value.substr(0, 7) === 'upload:') {
-			var uploadFieldPath = value.substr(7);
-			value = files[uploadFieldPath];
-		}
-		// detect a URL or Base64 Data
-		else if (/^(data:[a-z\/]+;base64)|(https?\:\/\/)/.test(value)) {
-			value = { path: value };
-		}
-		// TODO: The value won't be processed, we should probably return an error
+	// Find an uploaded file in the files argument, either referenced in the
+	// data argument or named with the field path / field_upload path + suffix
+	// Base64 data and remote URLs are also accepted as images to upload
+	if (typeof value === 'string' && value.substr(0, 7) === 'upload:') {
+		uploadedFile = files[value.substr(7)];
+	} else if (typeof value === 'string' && /^(data:[a-z\/]+;base64)|(https?\:\/\/)/.test(value)) {
+		uploadedFile = { path: value };
+	} else {
+		uploadedFile = this.getValueFromData(files) || this.getValueFromData(files, '_upload');
 	}
 
-	// if an object with a path has been provided, upload the value in the path
-	if (typeof value === 'object' && value.path) {
+	// Ensure a valid file was uploaded, else null out the value
+	if (uploadedFile && !uploadedFile.path) {
+		uploadedFile = undefined;
+	}
+
+	// If we have a file to upload, we do that and stop here
+	if (uploadedFile) {
 		var tagPrefix = keystone.get('cloudinary prefix') || '';
 		var uploadOptions = {
 			tags: [],
@@ -382,26 +417,65 @@ cloudinaryimage.prototype.updateItem = function (item, data, files, callback) {
 		if (folder) {
 			uploadOptions.folder = folder;
 		}
-		// NOTE: field.options.publicID has been deprecated (tbc)
-		if (field.options.filenameAsPublicID && value.originalname && typeof value.originalname === 'string') {
-			uploadOptions.public_id = value.originalname.substring(0, value.originalname.lastIndexOf('.'));
-		}
-		// TODO: implement autoCleanup; should delete existing images before uploading
-		cloudinary.uploader.upload(value.path, function (result) {
-			if (result.error) {
-				return callback(result.error);
-			} else {
-				item.set(field.path, result);
-				return callback();
+		this.getFilename(uploadedFile, function (err, filename) {
+			if (err) return callback(err);
+			// If an undefined filename is returned, Cloudinary will automatically generate a unique
+			//   filename. Therefore undefined is a valid filename value.
+			if (filename !== undefined) {
+				filename = sanitize(filename);
+				uploadOptions.public_id = trimSupportedFileExtensions(filename);
 			}
-		}, uploadOptions);
+			// TODO: implement autoCleanup; should delete existing images before uploading
+			cloudinary.uploader.upload(uploadedFile.path, function (result) {
+				if (result.error) {
+					return callback(result.error);
+				} else {
+					item.set(field.path, result);
+					return callback();
+				}
+			}, uploadOptions);
+		});
 
 		return;
 	}
 
-	// otherwise, simply set the value on the field
-	item.set(field.path, value);
+	// Empty / null values reset the field
+	if (value === null || value === '' || (typeof value === 'object' && !Object.keys(value).length)) {
+		value = getEmptyValue();
+	}
+
+	// If there is a valid value at this point, set it on the field
+	if (typeof value === 'object') {
+		item.set(this.path, value);
+	}
 	utils.defer(callback);
+};
+
+/**
+	Generates a filename with the provided method in a retry loop, used by
+	getFilename below
+*/
+cloudinaryimage.prototype.retryFilename = prototypeMethods.retryFilename;
+
+/**
+	Gets a filename for uploaded files based on the adapter options
+*/
+cloudinaryimage.prototype.getFilename = prototypeMethods.getFilename;
+
+cloudinaryimage.prototype.fileExists = function (filename, callback) {
+	var cloudinary = require('cloudinary');
+	cloudinary.api.resource(filename, function (result) {
+		if (result.error && result.error.http_code === 404) {
+			// File doesn't exist
+			callback(null, false);
+		} else if (result.error) {
+			// Error
+			callback(result.error, null);
+		} else {
+			// File exists
+			callback(null, true);
+		}
+	});
 };
 
 /**
@@ -501,13 +575,6 @@ cloudinaryimage.prototype.getRequestHandler = function (item, req, paths, callba
 			callback();
 		}
 	};
-};
-
-/**
- * Immediately handles a standard form submission for the field (see `getRequestHandler()`)
- */
-cloudinaryimage.prototype.handleRequest = function (item, req, paths, callback) {
-	this.getRequestHandler(item, req, paths, callback)();
 };
 
 /* Export Field Type */

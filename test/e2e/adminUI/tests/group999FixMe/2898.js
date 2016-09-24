@@ -1,28 +1,28 @@
 module.exports = {
 	before: function (browser) {
-		browser.app = browser.page.app();
-		browser.signinScreen = browser.page.signin();
-		browser.listScreen = browser.page.list();
-		browser.itemScreen = browser.page.item();
-		browser.initialFormScreen = browser.page.initialForm();
+		browser.adminUIApp = browser.page.adminUIApp();
+		browser.adminUISignin = browser.page.adminUISignin();
+		browser.adminUIListScreen = browser.page.adminUIListScreen();
+		browser.adminUIItemScreen = browser.page.adminUIItemScreen();
+		browser.adminUIInitialFormScreen = browser.page.adminUIInitialForm();
 
-		browser.app.gotoHomeScreen();
-		browser.app.waitForSigninScreen();
+		browser.adminUIApp.gotoHomeScreen();
+		browser.adminUIApp.waitForSigninScreen();
 
-		browser.signinScreen.signin();
-		browser.app.waitForHomeScreen();
+		browser.adminUISignin.signin();
+		browser.adminUIApp.waitForHomeScreen();
 	},
 	after: function (browser) {
-		browser.app.signout();
+		browser.adminUIApp.signout();
 		browser.end();
 	},
 	'Demonstrate issue 2898': function(browser) {
 		// Create items
-		browser.app.openFieldList('Datetime');
-		browser.listScreen.createFirstItem();
-		browser.app.waitForInitialFormScreen();
+		browser.adminUIApp.openList({section: 'fields', list: 'Datetime'});
+		browser.adminUIListScreen.createFirstItem();
+		browser.adminUIApp.waitForInitialFormScreen();
 
-		browser.initialFormScreen.fillInputs({
+		browser.adminUIInitialFormScreen.fillFieldInputs({
 			listName: 'Datetime',
 			fields: {
 				'name': {value: 'testing'},
@@ -30,10 +30,10 @@ module.exports = {
 			}
 		});
 
-		browser.initialFormScreen.save();
+		browser.adminUIInitialFormScreen.save();
 
 		// The following assertion passes where it should fail.
-		browser.itemScreen.assertInputs({
+		browser.adminUIItemScreen.assertFieldInputs({
 			listName: 'Datetime',
 			fields: {
 				'name': {value: 'testing'},
@@ -42,9 +42,9 @@ module.exports = {
 		});
 
 		// The following assertion fails where is should pass.
-		browser.initialFormScreen.assertFlashError("Please enter a valid date and time in the Field A field");
+		browser.adminUIInitialFormScreen.assertFlashError("Please enter a valid date and time in the Field A field");
 
-		browser.initialFormScreen.cancel();
+		browser.adminUIInitialFormScreen.cancel();
 
 	}
 };

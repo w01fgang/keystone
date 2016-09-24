@@ -37,8 +37,8 @@ markdown.prototype.validateRequiredInput = TextType.prototype.validateRequiredIn
 markdown.prototype.addToSchema = function (schema) {
 
 	var paths = this.paths = {
-		md: this._path.append('.md'),
-		html: this._path.append('.html'),
+		md: this.path + '.md',
+		html: this.path + '.html',
 	};
 
 	var markedOptions = this.markedOptions;
@@ -93,6 +93,14 @@ markdown.prototype.addFilterToQuery = function (filter) {
  */
 markdown.prototype.format = function (item) {
 	return item.get(this.paths.html);
+};
+
+/**
+ * Gets the field's data from an Item, as used by the React components
+ */
+markdown.prototype.getData = function (item) {
+	var value = item.get(this.path);
+	return typeof value === 'object' ? value : {};
 };
 
 /**

@@ -1,21 +1,20 @@
 module.exports = {
 	before: function (browser) {
-		browser.app = browser.page.app();
-		browser.signinScreen = browser.page.signin();
+		browser.adminUIApp = browser.page.adminUIApp();
+		browser.adminUISignin = browser.page.adminUISignin();
 
-		browser.app
-			.gotoHomeScreen()
-			.waitForSigninScreen();
+		browser.adminUIApp.gotoHomeScreen();
+		browser.adminUIApp.waitForSigninScreen();
 	},
 	after: function (browser) {
 		browser.end();
 	},
 	'Signin page should allow users to login': function (browser) {
-		browser.signinScreen.signin();
-		browser.app.waitForHomeScreen();
+		browser.adminUISignin.signin();
+		browser.adminUIApp.waitForHomeScreen();
 	},
 	'Signin page should be presented upon signout': function (browser) {
-		browser.app
+		browser.adminUIApp
 			.signout()
 			.waitForSigninScreen();
 	},

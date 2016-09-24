@@ -1,30 +1,30 @@
 module.exports = {
 	before: function (browser) {
-		browser.app = browser.page.app();
-		browser.signinScreen = browser.page.signin();
-		browser.listScreen = browser.page.list();
-		browser.itemScreen = browser.page.item();
-		browser.initialFormScreen = browser.page.initialForm();
+		browser.adminUIApp = browser.page.adminUIApp();
+		browser.adminUISignin = browser.page.adminUISignin();
+		browser.adminUIListScreen = browser.page.adminUIListScreen();
+		browser.adminUIItemScreen = browser.page.adminUIItemScreen();
+		browser.adminUIInitialFormScreen = browser.page.adminUIInitialForm();
 
-		browser.app.gotoHomeScreen();
-		browser.app.waitForSigninScreen();
+		browser.adminUIApp.gotoHomeScreen();
+		browser.adminUIApp.waitForSigninScreen();
 
-		browser.signinScreen.signin();
-		browser.app.waitForHomeScreen();
+		browser.adminUISignin.signin();
+		browser.adminUIApp.waitForHomeScreen();
 	},
 	after: function (browser) {
-		browser.app.signout();
+		browser.adminUIApp.signout();
 		browser.end();
 	},
 	'Depends On field should work in initial form': function(browser) {
 		// Create items
-		browser.app.openMiscList('DependsOn');
-		browser.listScreen.createFirstItem();
-		browser.app.waitForInitialFormScreen();
+		browser.adminUIApp.openList({section: 'Miscs', list: 'DependsOn'});
+		browser.adminUIListScreen.createFirstItem();
+		browser.adminUIApp.waitForInitialFormScreen();
 
 
 		// The dependency condition is met by default, so the dependent field should show.
-		browser.initialFormScreen.assertUIVisible({
+		browser.adminUIInitialFormScreen.assertFieldUIVisible({
 			listName: 'DependsOn',
 			fields: ['dependency', 'dependent'],
 			args: {
@@ -32,14 +32,14 @@ module.exports = {
 			}
 		});
 
-		browser.initialFormScreen.fillInputs({
+		browser.adminUIInitialFormScreen.fillFieldInputs({
 			listName: 'DependsOn',
 			fields: {
 				'dependency': true
 			}
 		});
 
-		browser.initialFormScreen.assertUIVisible({
+		browser.adminUIInitialFormScreen.assertFieldUIVisible({
 			listName: 'DependsOn',
 			fields: ['dependency'],
 			args: {
@@ -47,7 +47,7 @@ module.exports = {
 			}
 		});
 
-		browser.initialFormScreen.assertUINotPresent({
+		browser.adminUIInitialFormScreen.assertFieldUINotPresent({
 			listName: 'DependsOn',
 			fields: ['dependent'],
 			args: {
@@ -55,14 +55,14 @@ module.exports = {
 			}
 		});
 
-		browser.initialFormScreen.fillInputs({
+		browser.adminUIInitialFormScreen.fillFieldInputs({
 			listName: 'DependsOn',
 			fields: {
 				'dependency': false
 			}
 		});
 
-		browser.initialFormScreen.assertUIVisible({
+		browser.adminUIInitialFormScreen.assertFieldUIVisible({
 			listName: 'DependsOn',
 			fields: ['dependency', 'dependent'],
 			args: {
@@ -70,19 +70,19 @@ module.exports = {
 			}
 		});
 
-		browser.initialFormScreen.save();
+		browser.adminUIInitialFormScreen.save();
 	},
 
 	'Depends On field should work in the edit form': function(browser) {
 
 		// The dependency condition is met, so the dependent field should show.
-		browser.itemScreen.assertUIVisible({
+		browser.adminUIItemScreen.assertFieldUIVisible({
 			listName: 'DependsOn',
 			fields: ['dependency', 'dependent'],
 			args: {'editForm': false}
 		});
 
-		browser.itemScreen.fillInputs({
+		browser.adminUIItemScreen.fillFieldInputs({
 			listName: 'DependsOn',
 			fields: {
 				'dependency': true
@@ -90,7 +90,7 @@ module.exports = {
 		});
 
 		// The dependency condition is no longer met, field should not be visible.
-		browser.itemScreen.assertUINotPresent({
+		browser.adminUIItemScreen.assertFieldUINotPresent({
 			listName: 'DependsOn',
 			fields: ['dependent'],
 			args: {
@@ -98,14 +98,14 @@ module.exports = {
 			}
 		});
 
-		browser.itemScreen.fillInputs({
+		browser.adminUIItemScreen.fillFieldInputs({
 			listName: 'DependsOn',
 			fields: {
 				'dependency': false
 			}
 		});
 
-		browser.itemScreen.assertUIVisible({
+		browser.adminUIItemScreen.assertFieldUIVisible({
 			listName: 'DependsOn',
 			fields: ['dependency', 'dependent'],
 			args: {
@@ -113,6 +113,6 @@ module.exports = {
 			}
 		});
 
-		browser.itemScreen.save();
+		browser.adminUIItemScreen.save();
 	}
 };

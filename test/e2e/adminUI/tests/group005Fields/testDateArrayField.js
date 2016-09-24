@@ -1,45 +1,46 @@
 var fieldTests = require('./commonFieldTestUtils.js');
+var DateArrayModelTestConfig = require('../../../modelTestConfig/DateArrayModelTestConfig');
 
 module.exports = {
 	before: fieldTests.before,
 	after: fieldTests.after,
 	'DateArray field should show correctly in the initial modal': function (browser) {
-		browser.app.openFieldList('DateArray');
-		browser.listScreen.createFirstItem();
-		browser.app.waitForInitialFormScreen();
+		browser.adminUIApp.openList({section: 'fields', list: 'DateArray'});
+		browser.adminUIListScreen.clickCreateItemButton();
+		browser.adminUIApp.waitForInitialFormScreen();
 
-		browser.initialFormScreen.assertUI({
-			listName: 'DateArray',
-			fields: ['name']
+		browser.adminUIInitialFormScreen.assertFieldUIVisible({
+			modelTestConfig: DateArrayModelTestConfig,
+			fields: [{name: 'name'}]
 		});
 	},
 	'restoring test state': function(browser) {
-		browser.initialFormScreen.cancel();
-		browser.app.waitForListScreen();
+		browser.adminUIInitialFormScreen.cancel();
+		browser.adminUIApp.waitForListScreen();
 	},
 	'DateArray field can be filled via the initial modal': function(browser) {
-		browser.app.openFieldList('DateArray');
-		browser.listScreen.createFirstItem();
-		browser.app.waitForInitialFormScreen();
-		browser.initialFormScreen.fillInputs({
-			listName: 'DateArray',
+		browser.adminUIApp.openList({section: 'fields', list: 'DateArray'});
+		browser.adminUIListScreen.clickCreateItemButton();
+		browser.adminUIApp.waitForInitialFormScreen();
+		browser.adminUIInitialFormScreen.fillFieldInputs({
+			modelTestConfig: DateArrayModelTestConfig,
 			fields: {
 				'name': {value: 'DateArray Field Test 1'},
 			}
 		});
 		/* TODO Pending fix of timezone issues which are causing Travis CI to fail
-		browser.initialFormScreen.assertInputs({
-			listName: 'DateArray',
+		browser.adminUIInitialFormScreen.assertFieldInputs({
+			modelTestConfig: DateArrayModelTestConfig,
 			fields: {
 				'name': {value: 'DateArray Field Test 1'},
 			}
 		});
 		*/
-		browser.initialFormScreen.save();
-		browser.app.waitForItemScreen();
+		browser.adminUIInitialFormScreen.save();
+		browser.adminUIApp.waitForItemScreen();
 		/* TODO Pending fix of timezone issues which are causing Travis CI to fail
-		browser.itemScreen.assertInputs({
-			listName: 'DateArray',
+		browser.adminUIItemScreen.assertFieldInputs({
+			modelTestConfig: DateArrayModelTestConfig,
 			fields: {
 				'name': {value: 'DateArray Field Test 1'},
 			}
@@ -47,54 +48,80 @@ module.exports = {
 		*/
 	},
 	'DateArray field should show correctly in the edit form': function(browser) {
-		browser.itemScreen.assertUI({
-			listName: 'DateArray',
-			fields: ['fieldA', 'fieldB']
+		browser.adminUIItemScreen.assertFieldUIVisible({
+			modelTestConfig: DateArrayModelTestConfig,
+			fields: [{name: 'fieldA'}, {name: 'fieldB'}]
 		});
-		browser.itemScreen.section.form.section.datearrayList.section.fieldA.addDate();
-		browser.itemScreen.assertUI({
-			listName: 'DateArray',
-			fields: ['fieldA'],
-			args: {'dateInputs': ['date1']}
+		browser.adminUIItemScreen.clickFieldUI({
+			modelTestConfig: DateArrayModelTestConfig,
+			fields: {
+				'fieldA': {'click': 'addButton'},
+			}
 		});
-		browser.itemScreen.section.form.section.datearrayList.section.fieldA.addDate();
-		browser.itemScreen.assertUI({
-			listName: 'DateArray',
-			fields: ['fieldA'],
-			args: {'dateInputs': ['date1', 'date2']}
+		browser.adminUIItemScreen.assertFieldUIVisible({
+			modelTestConfig: DateArrayModelTestConfig,
+			fields: [{
+				name: 'fieldA',
+				options: {'dateInputs': ['date1']}
+			}],
 		});
-		browser.itemScreen.section.form.section.datearrayList.section.fieldB.addDate();
-		browser.itemScreen.section.form.section.datearrayList.section.fieldB.addDate();
-		browser.itemScreen.assertUI({
-			listName: 'DateArray',
-			fields: ['fieldB'],
-			args: {'dateInputs': ['date1', 'date2']}
+		browser.adminUIItemScreen.clickFieldUI({
+			modelTestConfig: DateArrayModelTestConfig,
+			fields: {
+				'fieldA': {'click': 'addButton'},
+			}
+		});
+		browser.adminUIItemScreen.assertFieldUIVisible({
+			modelTestConfig: DateArrayModelTestConfig,
+			fields: [{
+				name: 'fieldA',
+				options: {'dateInputs': ['date1', 'date2']}
+			}],
+		});
+		browser.adminUIItemScreen.clickFieldUI({
+			modelTestConfig: DateArrayModelTestConfig,
+			fields: {
+				'fieldB': {'click': 'addButton'},
+			}
+		});
+		browser.adminUIItemScreen.clickFieldUI({
+			modelTestConfig: DateArrayModelTestConfig,
+			fields: {
+				'fieldB': {'click': 'addButton'},
+			}
+		});
+		browser.adminUIItemScreen.assertFieldUIVisible({
+			modelTestConfig: DateArrayModelTestConfig,
+			fields: [{
+				name: 'fieldB',
+				options: {'dateInputs': ['date1', 'date2']}
+			}],
 		});
 	},
 	'DateArray field can be filled via the edit form': function(browser) {
-		browser.itemScreen.fillInputs({
-			listName: 'DateArray',
+		browser.adminUIItemScreen.fillFieldInputs({
+			modelTestConfig: DateArrayModelTestConfig,
 			fields: {
 				'fieldA': {date1: '2016-01-01', date2: '2016-01-02'}
 			}
 		});
-		browser.itemScreen.fillInputs({
-			listName: 'DateArray',
+		browser.adminUIItemScreen.fillFieldInputs({
+			modelTestConfig: DateArrayModelTestConfig,
 			fields: {
 				'fieldB': {date1: '2016-01-03', date2: '2016-01-04'}
 			}
 		});
-		// Drop focus on the date field so the popup disappears. 
+		// Drop focus on the date field so the popup disappears.
 		browser.execute(function() {
 			document.activeElement.blur();
 		});
 
-		browser.itemScreen.save();
-		browser.app.waitForItemScreen();
-		browser.itemScreen.assertFlashMessage('Your changes have been saved successfully');
+		browser.adminUIItemScreen.save();
+		browser.adminUIApp.waitForItemScreen();
+		browser.adminUIItemScreen.assertFlashMessage('Your changes have been saved successfully');
 		/* TODO Pending fix of timezone issues which are causing Travis CI to fail
-		browser.itemScreen.assertInputs({
-			listName: 'DateArray',
+		browser.adminUIItemScreen.assertFieldInputs({
+			modelTestConfig: DateArrayModelTestConfig,
 			fields: {
 				'name': {value: 'DateArray Field Test 1'},
 				'fieldA': {date1: '2016-01-01', date2: '2016-01-02'},

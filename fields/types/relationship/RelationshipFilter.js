@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import async from 'async';
 import React from 'react';
 import { findDOMNode } from 'react-dom';
@@ -87,6 +88,7 @@ var RelationshipFilter = React.createClass({
 	buildFilters () {
 		var filters = {};
 		_.forEach(this.props.field.filters, function (value, key) {
+			if (value[0] === ':') return;
 			filters[key] = value;
 		}, this);
 
